@@ -1,0 +1,15 @@
+import WelcomeMessage from '../../components/atoms/WelcomeMessage/WelcomeMessage'
+import AdminStaticsticsSections from '../../components/organisms/AdminStatisticsSection/AdminStaticsticsSections'
+
+const StatisticsPage = () => {
+  return (
+    <main>
+      <section className='p-[1rem] xl:ml-[300px] xl:mr-[50px] max-lg:pt-14 text-primary-color'>
+        <WelcomeMessage />
+        <AdminStaticsticsSections />
+      </section>
+    </main>
+  )
+}
+
+export default StatisticsPage

@@ -1,0 +1,230 @@
+@tailwind base;
+@tailwind components;
+@layer base {
+  img {
+    @apply inline-block;
+  }
+}
+@tailwind utilities;
+
+@font-face {
+  font-family: 'icomoon';
+  src:  url('./../../public/fonts/icomoon.eot?7j5h0o');
+  src:  url('./../../public/fonts/icomoon.eot?7j5h0o#iefix') format('embedded-opentype'),
+    url('./../../public/fonts/icomoon.ttf?7j5h0o') format('truetype'),
+    url('./../../public/fonts/icomoon.woff?7j5h0o') format('woff'),
+    url('./../../public/fonts/icomoon.svg?7j5h0o#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --primary-color: #01b8e5;
+  --secondary-color: #ffffff;
+  --accent-color: #0046a8;
+  --accent-light-color: #5cb7e3;
+  --error-color: #ed4343;
+  --light-color-one: #f1f1f1;
+  --light-color-two: #a5a5a5;
+  --light-color-three: #d9d9d9;
+  --progress-color: #ffdc62;
+  --success-color: #a1f879;
+  --success-color-two: #62a145;
+  --reject-color: #f97676;
+  --no-sign-color: #f9a676;
+  --signed-color:rgb(168, 81, 30);
+  --delay-color: #9f1bc0;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+.input-container {
+  width: 100%;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+}
+
+/* input[type='date']:in-range::-webkit-datetime-edit-year-field,
+input[type='date']:in-range::-webkit-datetime-edit-month-field,
+input[type='date']:in-range::-webkit-datetime-edit-day-field,
+input[type='date']:in-range::-webkit-datetime-edit-text {
+  color: transparent;
+} */
+
+.ct-series-a .ct-bar {
+  stroke: var(--primary-color) !important;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--secondary-color);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-account-balance:before {
+  content: "\e921";
+  color: #01b8e5;
+}
+.icon-article:before {
+  content: "\e900";
+}
+.icon-attach-money:before {
+  content: "\e901";
+}
+.icon-bars-solid:before {
+  content: "\e902";
+}
+.icon-bouletin:before {
+  content: "\e903";
+}
+.icon-calendar:before {
+  content: "\e904";
+  color: #818181;
+}
+.icon-cash .path1:before {
+  content: "\e905";
+  color: rgb(120, 144, 156);
+}
+.icon-cash .path2:before {
+  content: "\e906";
+  margin-left: -1em;
+  color: rgb(174, 213, 129);
+}
+.icon-cash .path3:before {
+  content: "\e907";
+  margin-left: -1em;
+  color: rgb(85, 139, 47);
+}
+.icon-cash .path4:before {
+  content: "\e908";
+  margin-left: -1em;
+  color: rgb(85, 139, 47);
+}
+.icon-cash .path5:before {
+  content: "\e909";
+  margin-left: -1em;
+  color: rgb(85, 139, 47);
+}
+.icon-cash .path6:before {
+  content: "\e90a";
+  margin-left: -1em;
+  color: rgb(85, 139, 47);
+}
+.icon-cash .path7:before {
+  content: "\e90b";
+  margin-left: -1em;
+  color: rgb(207, 216, 220);
+}
+.icon-chart:before {
+  content: "\e90c";
+}
+.icon-circle-bell:before {
+  content: "\e90d";
+}
+.icon-eye:before {
+  content: "\e90e";
+}
+.icon-facebook:before {
+  content: "\e90f";
+  color: #f1f1f1;
+}
+.icon-house:before {
+  content: "\e910";
+}
+.icon-instagram:before {
+  content: "\e911";
+  color: #f1f1f1;
+}
+.icon-left-arrow:before {
+  content: "\e912";
+  color: #a5a5a5;
+}
+.icon-linkedin:before {
+  content: "\e913";
+  color: #f1f1f1;
+}
+.icon-lock:before {
+  content: "\e914";
+  color: #01b8e5;
+}
+.icon-notification:before {
+  content: "\e915";
+  color: #f97676;
+}
+.icon-out:before {
+  content: "\e916";
+}
+.icon-person-square:before {
+  content: "\e917";
+  color: #01b8e5;
+}
+.icon-plus-icon:before {
+  content: "\e918";
+  color: #f1f1f1;
+}
+.icon-right-arrow:before {
+  content: "\e919";
+  color: #01b8e5;
+}
+.icon-round-timer:before {
+  content: "\e91a";
+}
+.icon-search:before {
+  content: "\e91b";
+  color: #01b8e5;
+}
+.icon-square-check:before {
+  content: "\e91c";
+}
+.icon-square-reject:before {
+  content: "\e91d";
+}
+.icon-trash-can:before {
+  content: "\e91e";
+}
+.icon-user:before {
+  content: "\e91f";
+}
+.icon-youtube:before {
+  content: "\e920";
+  color: #f1f1f1;
+}

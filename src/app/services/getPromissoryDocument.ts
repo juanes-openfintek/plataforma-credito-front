@@ -1,0 +1,29 @@
+import { signOut } from 'next-auth/react'
+// import getUserToken from '../helpers/getUserToken'
+import axios from 'axios'
+
+const getPromissoryDocument = async (idSentDocument : string) => {
+  try {
+    // TODO: get token from session
+    // const token = await getUserToken()
+    const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOnsidXNlciI6eyJ0ZXJtcyI6MCwiX2lkIjoiNjQwMjIwMDc5NWZmM2YwMDIwMThkN2QxIiwiaWRlbnRpZmljYXRpb24iOiI0MjYzNjQwIiwiY2VsbHBob25lIjoiMzA0MjcxOTQ3OCIsImV4cGVkaXRpb25DaXR5IjoiQm9nb3RhIiwiZW1haWwiOiJwYWxlbnp1ZWxhb21hckBnbWFpbC5jb20iLCJjb3VudHJ5IjoiQ08iLCJmaXJzdE5hbWUiOiJPTUFSIiwibGFzdE5hbWUiOiJDSEFWRVoiLCJtb3JlIjp7Im51bWJlciI6IjMwNCAyNzE5NDc4IiwiaW50ZXJuYXRpb25hbE51bWJlciI6Iis1NyAzMDQgMjcxOTQ3OCIsIm5hdGlvbmFsTnVtYmVyIjoiMzA0IDI3MTk0NzgiLCJlMTY0TnVtYmVyIjoiKzU3MzA0MjcxOTQ3OCIsImNvdW50cnlDb2RlIjoiQ08iLCJkaWFsQ29kZSI6Iis1NyJ9LCJpZGVudGlmaWNhdGlvbktpbmQiOiJJRCIsImNyZWF0ZWRBdCI6IjIwMjMtMDMtMDNUMTY6Mjc6NTEuNjQ1WiIsInVwZGF0ZWRBdCI6IjIwMjMtMTAtMzBUMTk6NDE6MzUuMzAxWiIsIl9fdiI6MCwiY2l0eSI6IkJvZ290YSJ9LCJvcmdhbml6YXRpb24iOnsiYXNzZXRDb3VudCI6MzY4LCJkb2N1bWVudFBheUNvdW50IjoxMDAwMCwiX2lkIjoiNjFmYjA5NDI0ZTRhZGYwMDFmZWU1MWE5IiwiYnVzaW5lc3NOYW1lIjoiQVJLRElBIiwidHJpYnV0YXJ5TnVtYmVyIjoiOTAxMTY5Nzg2NSIsImNvdW50cnkiOiJDTyIsImNpdHkiOiJCT0dPVEEiLCJhY3RpdmUiOiIxIiwicGxhbiI6MSwiZW1haWwiOiJub3RpZmljYWNpb25lc0BhcmtkaWEuY28iLCJwaG9uZSI6IjM1MDUzNjA2MDYiLCJhZGRyZXNzIjoiQ2FycmVyYSAxMUIgIzk4LTA4IE9maWNpbmEgNDAzIiwid2ViU2l0ZSI6ImFya2RpYS5jbyIsImlkZW50aXR5IjoiNjFmOTlmZDk3NDRlZDUwMDFmMDhhODM1IiwibGVnYWxFbnRpdHkiOiJqdXJpZGljYSIsImNyZWF0ZWRBdCI6IjIwMjItMDItMDJUMjI6NDQ6MTguOTcyWiIsInVwZGF0ZWRBdCI6IjIwMjMtMTEtMDhUMTM6NTk6MjkuNDk2WiIsIl9fdiI6MCwiZXhwaXJlc0FjdGl2ZSI6IjIwMjUtMTEtMzBUMTY6MjM6NTUuOTU0WiIsImxvZ28iOiIvaG9tZS9hcGkvcmVwb3NpdG9yaWVzLzYxZmIwOTQyNGU0YWRmMDAxZmVlNTFhOS9sb2dvL3VwbG9hZF8xYThkN2FkMjZlZmJmZDVhMTEzNGEwMjVkNzAxYmYzOCIsImNvbnN0aXR1dGlvbkRhdGUiOm51bGwsImZvb3RlciI6Imh0dHBzOi8vZHJpdmUuZ29vZ2xlLmNvbS9maWxlL2QvMXJyeUZrUVFMbWZnQ1VQT3I1OXZlNVpOWDhHdEctOFpXL3ZpZXc_dXNwPWRyaXZlX2xpbmsiLCJoZWFkZXIiOiJodHRwczovL2RyaXZlLmdvb2dsZS5jb20vZmlsZS9kLzFEdlpDak1HTlVXNl9BbTdKd3h0RnR1WEFycVZSMzRoay92aWV3P3VzcD1kcml2ZV9saW5rIiwibG9nb1VybCI6Imh0dHBzOi8vZHJpdmUuZ29vZ2xlLmNvbS9maWxlL2QvMVBubWx5bmpUYUwweTA0Y0EteGJUN0FyQ21DSHo3bi1kL3ZpZXc_dXNwPWRyaXZlX2xpbmsifX0sImlhdCI6MTY5OTQ2ODcyMSwiZXhwIjoxNzMxMDA0NzIxfQ.T4N2bfc9jdfWvZIo1Bl9F-ePpko43tFR12Q7zMeIqIg'
+    const response = await axios.get(
+      process.env.NEXT_PUBLIC_BACKEND_ARKDIA + '/v1/bpo/asset/download-version/' + idSentDocument,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: 'blob'
+      }
+    )
+    return response.data
+  } catch (error: any) {
+    console.error('Error fetching data:', error)
+    if (error?.response?.status === 401) {
+      signOut()
+    }
+    return error.response
+  }
+}
+
+export default getPromissoryDocument
