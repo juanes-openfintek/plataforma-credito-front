@@ -9,7 +9,7 @@ import { Faqs } from '../../../constants/FaqData'
  */
 const FaqBanner = () => {
   return (
-    <section className='bg-white text-black p-[10rem] max-lg:p-6'>
+    <section id="preguntas" className='bg-white text-black p-[10rem] max-lg:p-6'>
       <h2 className='max-2xl:text-4xl text-[3.75rem] text-center max-lg:mt-10 relative'>
         Preguntas{' '}
         <span className='text-primary-color font-bold'>Frecuentes</span>

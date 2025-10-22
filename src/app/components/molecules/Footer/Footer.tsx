@@ -7,7 +7,7 @@ import NextImage from '../../atoms/NextImage/NextImage'
  */
 const Footer = () => {
   return (
-    <footer className='flex flex-row max-sm:flex-col py-20 max-sm:py-10 px-[12rem] max-sm:px-6 bg-primary-color text-white'>
+    <footer id="contactanos" className='flex flex-row max-sm:flex-col py-20 max-sm:py-10 px-[12rem] max-sm:px-6 bg-primary-color text-white'>
       <div className='flex flex-col w-1/2 text-sm max-sm:w-full max-sm:items-center'>
         <NextImage
           src='/images/feelpay-logo-light.png'

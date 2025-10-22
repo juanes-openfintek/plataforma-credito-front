@@ -80,12 +80,8 @@ const CreditStatus = ({ dataCredit }: CreditStatusProps) => {
         <SimpleFieldInput
           value={
             dataCredit?.quotasNumber === 12
-              ? (
-                  dataCredit?.taxes?.rateEffectiveAnnual
-                ).toString() + '%'
-              : (
-                  dataCredit?.taxes?.rateEffectiveMonthly
-                ).toString() + '%'
+              ? (dataCredit?.taxes?.rateEffectiveAnnual?.toString() || '0') + '%'
+              : (dataCredit?.taxes?.rateEffectiveMonthly?.toString() || '0') + '%'
           }
           type='text'
           label='Interés aplicado'

@@ -40,16 +40,27 @@ const PersonalDataRegister = ({
    */
   useEffect(() => {
     const fetchBanks = async () => {
-      const banks = await getBanks()
-      const parsedData = banks.banks.map((bank: BankData) => {
-        return {
-          text: bank.name,
-          value: bank.name,
+      try {
+        const banksData = await getBanks()
+        
+        // Validar que banksData y banksData.banks existan
+        if (!banksData || !banksData.banks || !Array.isArray(banksData.banks)) {
+          console.error('Invalid banks data received:', banksData)
+          return
         }
-      })
-      saveBanks(banks.banks)
-      parsedData.unshift({ text: '-- Seleccione una opción --', value: '' })
-      setBanks(parsedData)
+        
+        const parsedData = banksData.banks.map((bank: BankData) => {
+          return {
+            text: bank.name,
+            value: bank.name,
+          }
+        })
+        saveBanks(banksData.banks)
+        parsedData.unshift({ text: '-- Seleccione una opción --', value: '' })
+        setBanks(parsedData)
+      } catch (error) {
+        console.error('Error fetching banks:', error)
+      }
     }
     fetchBanks()
   }, [])
@@ -94,15 +105,24 @@ const PersonalDataRegister = ({
     const bank = bankAllData.find(
       (bank) => bank.name === formik.values.nameBankAccount
     )
-    const types =
-      bank?.supported_account_types.map((type) => {
-        return {
-          text: formatTypeAccount(type),
-          value: type,
-        }
-      }) ?? []
+    
+    // Validar que el banco existe y tiene tipos de cuenta
+    if (!bank || !bank.supported_account_types || !Array.isArray(bank.supported_account_types)) {
+      setBanksType([{ text: '-- Seleccione una opción --', value: '' }])
+      formik.setFieldValue('typeAccount', '')
+      return
+    }
+    
+    const types = bank.supported_account_types.map((type) => {
+      return {
+        text: formatTypeAccount(type),
+        value: type,
+      }
+    })
+    
     types.unshift({ text: '-- Seleccione una opción --', value: '' })
-    setBanksType(types ?? [])
+    setBanksType(types)
+    
     // avoid reset the type account if the user has already selected one
     if (types.find((type) => type.value === formik.values.typeAccount)) {
       return

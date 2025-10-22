@@ -5,11 +5,11 @@ const postNewFile = async (file: FormData) => {
   try {
     const response = await axios.post(
       process.env.NEXT_PUBLIC_BACKEND_URL + '/files/upload',
-      { file },
+      file, // Enviar directamente el FormData, no como { file }
       {
         headers: {
           'x-security-token': process.env.NEXT_PUBLIC_SECURITY_TOKEN,
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': false, // Dejar que axios establezca el content-type correcto con boundary
         },
       }
     )

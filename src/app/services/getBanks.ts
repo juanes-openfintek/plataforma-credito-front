@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { signOut } from 'next-auth/react'
+import colombianBanks from '../constants/colombianBanks'
 
 const getBanks = async () => {
   try {
@@ -13,11 +14,21 @@ const getBanks = async () => {
     )
     return response.data
   } catch (error: any) {
-    console.error('Error fetching data:', error)
+    console.warn('⚠️  Endpoint /mono/banks not available, using mock data:', error.message)
+    
+    // Si es error 401, cerrar sesión
     if (error?.response?.status === 401) {
       signOut()
     }
-    return []
+    
+    // Retornar datos mock de bancos colombianos
+    return { 
+      banks: colombianBanks.map(bank => ({
+        code: bank.code,
+        name: bank.name,
+        supported_account_types: bank.supported_account_types
+      }))
+    }
   }
 }
 

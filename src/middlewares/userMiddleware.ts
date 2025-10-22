@@ -13,16 +13,41 @@ export const userMiddleware: MiddlewareFactory = (next) => {
   return async (request: NextRequest, _next: NextFetchEvent) => {
     const pathname = request.nextUrl.pathname
     if (['/usuario']?.some((path) => pathname.startsWith(path))) {
-      const session: any = await getToken({
-        req: request,
-        secret: process.env.SECRET,
-      })
-      const expirationDate = new Date(session?.exp * 1000).getTime()
-      if (expirationDate < Date.now()) {
-        return NextResponse.redirect(new URL('/', request.url))
-      }
-      const userData = decryptData(session?.user)
-      if (!userData?.roles?.includes('user')) {
+      try {
+        const session: any = await getToken({
+          req: request,
+          secret: process.env.NEXTAUTH_SECRET || process.env.SECRET,
+        })
+        
+        console.log('🔍 Session check for /usuario:', session ? 'Session found' : 'No session')
+        
+        if (!session) {
+          console.log('❌ No session found, redirecting to login')
+          return NextResponse.redirect(new URL('/login', request.url))
+        }
+        
+        const expirationDate = new Date(session?.exp * 1000).getTime()
+        if (expirationDate < Date.now()) {
+          console.log('❌ Session expired, redirecting to home')
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+        
+        let userData;
+        try {
+          userData = decryptData(session?.user)
+        } catch (decryptError) {
+          console.error('❌ Error decrypting user data:', decryptError)
+          return NextResponse.redirect(new URL('/login', request.url))
+        }
+        
+        if (!userData || !userData?.roles?.includes('user')) {
+          console.log('❌ User does not have user role, redirecting to home')
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+        
+        console.log('✅ User authenticated successfully')
+      } catch (error) {
+        console.error('❌ Error in userMiddleware:', error)
         return NextResponse.redirect(new URL('/', request.url))
       }
     }

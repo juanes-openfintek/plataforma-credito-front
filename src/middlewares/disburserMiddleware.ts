@@ -12,16 +12,28 @@ export const disburserMiddleware: MiddlewareFactory = (next) => {
   return async (request: NextRequest, _next: NextFetchEvent) => {
     const pathname = request.nextUrl.pathname
     if (['/desembolsador']?.some((path) => pathname.startsWith(path))) {
-      const session: any = await getToken({
-        req: request,
-        secret: process.env.SECRET,
-      })
-      const expirationDate = new Date(session?.exp * 1000).getTime()
-      if (expirationDate < Date.now()) {
-        return NextResponse.redirect(new URL('/', request.url))
-      }
-      const userData = decryptData(session?.user)
-      if (!userData?.roles?.includes('disburser')) {
+      try {
+        const session: any = await getToken({
+          req: request,
+          secret: process.env.NEXTAUTH_SECRET || process.env.SECRET,
+        })
+        
+        if (!session) {
+          return NextResponse.redirect(new URL('/login', request.url))
+        }
+        
+        const expirationDate = new Date(session?.exp * 1000).getTime()
+        if (expirationDate < Date.now()) {
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+        
+        const userData = decryptData(session?.user)
+        
+        if (!userData || !userData?.roles?.includes('disburser')) {
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+      } catch (error) {
+        console.error('❌ Error in disburserMiddleware:', error)
         return NextResponse.redirect(new URL('/', request.url))
       }
     }

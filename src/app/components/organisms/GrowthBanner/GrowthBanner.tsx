@@ -7,7 +7,7 @@ import NextImage from '../../atoms/NextImage/NextImage'
  */
 const GrowthBanner = () => {
   return (
-    <section className='flex flex-row bg-cover bg-white bg-wave-pattern-lg h-[60rem] p-20 items-center max-lg:flex-col relative text-white'>
+    <section id="nosotros" className='flex flex-row bg-cover bg-white bg-wave-pattern-lg h-[60rem] p-20 items-center max-lg:flex-col relative text-white'>
       <div className='w-1/2 p-20 max-lg:w-full max-lg:p-0'>
         <h2 className='max-2xl:text-4xl text-[3.125rem]'>
           ¡Crecemos <span className='font-bold'>junto a ti</span>!

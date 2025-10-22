@@ -13,14 +13,18 @@ interface ChartViewProps {
 
 const ChartView = ({ collectedData }: ChartViewProps) => {
   const chart = useRef(null)
+  
+  // Validar que collectedData sea un array
+  const safeCollectedData = Array.isArray(collectedData) ? collectedData : []
+  
   /**
    * labelsParsed is used to get the labels for the chart
    */
-  const labelsParsed = collectedData.map((element) => element._id)
+  const labelsParsed = safeCollectedData.map((element) => element._id)
   /**
    * seriesParsed is used to get the series for the chart
    */
-  const seriesParsed = collectedData.map((element) => element.total)
+  const seriesParsed = safeCollectedData.map((element) => element.total)
 
   useEffect(() => {
     const chartInstance = new BarChart(

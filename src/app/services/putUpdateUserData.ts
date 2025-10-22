@@ -19,6 +19,8 @@ const putUpdateUserData = async (data: UserData) => {
     return response.data
   } catch (error: any) {
     console.error('Error fetching data:', error)
+    console.error('Error response:', error?.response?.data)
+    console.error('Error status:', error?.response?.status)
     if (error?.response?.status === 401) {
       signOut()
     }

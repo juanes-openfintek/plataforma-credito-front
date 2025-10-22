@@ -12,7 +12,7 @@ import UserDataForms from '../UserDataForms/UserDataForms'
 const MainBanner = () => {
   return (
     <CreditContextProvider>
-      <section className='flex justify-content-center bg-white pt-20 lg:p-20 lg:mt-8'>
+      <section id="creditos" className='flex justify-content-center bg-white pt-20 lg:p-20 lg:mt-8'>
         <div className='w-full lg:w-1/2'>
           <div className='flex flex-col px-8'>
             <h2 className='text-black text-[3.75rem] max-2xl:text-4xl'>

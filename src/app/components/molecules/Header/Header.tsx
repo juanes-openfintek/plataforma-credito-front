@@ -54,52 +54,32 @@ const Header = () => {
             Inicio
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'text-black hover:text-primary-color mx-4 px-4 border-b-2 border-accent-light-color max-lg:hidden'
-                : 'text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
-            }
+            href='/#creditos'
+            className='text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
           >
             Créditos
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'text-black hover:text-primary-color mx-4 px-4 border-b-2 border-accent-light-color max-lg:hidden'
-                : 'text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
-            }
+            href='/#beneficios'
+            className='text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
           >
             Beneficios
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'text-black hover:text-primary-color mx-4 px-4 border-b-2 border-accent-light-color max-lg:hidden'
-                : 'text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
-            }
+            href='/#nosotros'
+            className='text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
           >
             Nosotros
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'text-black hover:text-primary-color mx-4 px-4 border-b-2 border-accent-light-color max-lg:hidden'
-                : 'text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
-            }
+            href='/#preguntas'
+            className='text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
           >
             Preguntas
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'text-black hover:text-primary-color mx-4 px-4 border-b-2 border-accent-light-color max-lg:hidden'
-                : 'text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
-            }
+            href='/#contactanos'
+            className='text-black hover:text-primary-color mx-4 px-4 max-lg:hidden'
           >
             Contáctanos
           </Link>
@@ -127,53 +107,33 @@ const Header = () => {
             Inicio
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'my-4 border-b-2 border-accent-light-color text-primary-color'
-                : 'my-4 text-primary-color'
-            }
+            href='/#creditos'
+            className='my-4 text-primary-color'
           >
             {' '}
             Créditos
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'my-4 border-b-2 border-accent-light-color text-primary-color'
-                : 'my-4 text-primary-color'
-            }
+            href='/#beneficios'
+            className='my-4 text-primary-color'
           >
             Beneficios
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'my-4 border-b-2 border-accent-light-color text-primary-color'
-                : 'my-4 text-primary-color'
-            }
+            href='/#nosotros'
+            className='my-4 text-primary-color'
           >
             Nosotros
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'my-4 border-b-2 border-accent-light-color text-primary-color'
-                : 'my-4 text-primary-color'
-            }
+            href='/#preguntas'
+            className='my-4 text-primary-color'
           >
             Preguntas
           </Link>
           <Link
-            href='/#'
-            className={
-              path === '/#'
-                ? 'my-4 border-b-2 border-accent-light-color text-primary-color'
-                : 'my-4 text-primary-color'
-            }
+            href='/#contactanos'
+            className='my-4 text-primary-color'
           >
             Contáctanos
           </Link>

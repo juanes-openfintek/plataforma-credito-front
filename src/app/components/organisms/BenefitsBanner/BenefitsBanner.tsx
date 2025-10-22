@@ -7,7 +7,7 @@ import NextImage from '../../atoms/NextImage/NextImage'
  */
 const BenefitsBanner = () => {
   return (
-    <section className='p-20 max-lg:p-8 bg-white'>
+    <section id="beneficios" className='p-20 max-lg:p-8 bg-white'>
       <h2 className='text-black max-2xl:text-4xl text-[3.75rem] text-center'>
         ¿<span className='text-primary-color font-bold'>Qué Beneficios</span>{' '}
         ofrece Marca Blanca Creditos?

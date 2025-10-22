@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import SquareButton from '../../atoms/SquareButton/SquareButton'
 import ChartView from '../../molecules/ChartView/ChartView'
 import getAmountCirculation from '../../../services/getAmountCirculation'
@@ -8,48 +8,73 @@ import getAmountCollectedTickets from '../../../services/getAmountCollectedTicke
 
 const AdminStatisticsOverview = () => {
   /**
-   * Initialization of the dates used to filter the statistics
-   */
-  const today = new Date()
-  const weekAgo = new Date(today)
-  const monthAgo = new Date(today)
-  today.setHours(0, 0, 0, 0)
-  weekAgo.setHours(0, 0, 0, 0)
-  monthAgo.setHours(0, 0, 0, 0)
-  weekAgo.setDate(today.getDate() - 7)
-  monthAgo.setMonth(today.getMonth() - 1)
-
-  /**
    * Initialization of the states used to store the data
    */
-  const [totalCirculation, setTotalCirculation] = useState<number>(0)
-  const [totalCollected, setTotalCollected] = useState<number>(0)
-  const [collectedStatistics, setCollectedStatistics] = useState<any>(0)
-  const [selectedFilter, setSelectedFilter] = useState<Date>(today)
+  const [totalCirculation, setTotalCirculation] = useState(0)
+  const [totalCollected, setTotalCollected] = useState(0)
+  const [collectedStatistics, setCollectedStatistics] = useState([])
+  const [selectedFilter, setSelectedFilter] = useState(() => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    return date
+  })
+
+  /**
+   * Initialization of the dates used to filter the statistics
+   */
+  const today = useMemo(() => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    return date
+  }, [])
+
+  const weekAgo = useMemo(() => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    date.setDate(date.getDate() - 7)
+    return date
+  }, [])
+
+  const monthAgo = useMemo(() => {
+    const date = new Date()
+    date.setHours(0, 0, 0, 0)
+    date.setMonth(date.getMonth() - 1)
+    return date
+  }, [])
 
   /**
    * useEffect to fetch the amounts of money collected
    */
   useEffect(() => {
     const fetchAmounts = async () => {
-      const response = await getAmountCollectedTickets(
-        selectedFilter.toISOString().split('T')[0]
-      )
-      setCollectedStatistics(response?.values)
-      if (response?.total[0]?.total) {
-        setTotalCollected(response?.total[0].total)
-        return
+      try {
+        const response = await getAmountCollectedTickets(
+          selectedFilter.toISOString().split('T')[0]
+        )
+        setCollectedStatistics(response?.values || [])
+        if (response?.total?.[0]?.total) {
+          setTotalCollected(response.total[0].total)
+        } else {
+          setTotalCollected(0)
+        }
+      } catch (error) {
+        console.error('Error fetching collected tickets:', error)
+        setCollectedStatistics([])
+        setTotalCollected(0)
       }
-      setTotalCollected(0)
     }
     const fetchAmountsCirculation = async () => {
-      const response = await getAmountCirculation(selectedFilter.toISOString().split('T')[0])
-
-      if (response?.total[0]?.total) {
-        setTotalCirculation(response?.total[0]?.total)
-        return
+      try {
+        const response = await getAmountCirculation(selectedFilter.toISOString().split('T')[0])
+        if (response?.total?.[0]?.total) {
+          setTotalCirculation(response.total[0].total)
+        } else {
+          setTotalCirculation(0)
+        }
+      } catch (error) {
+        console.error('Error fetching circulation:', error)
+        setTotalCirculation(0)
       }
-      setTotalCirculation(0)
     }
     fetchAmounts()
     fetchAmountsCirculation()
@@ -101,7 +126,9 @@ const AdminStatisticsOverview = () => {
           </div>
         </div>
       </div>
-      {collectedStatistics && <ChartView collectedData={collectedStatistics} />}
+      {collectedStatistics && collectedStatistics.length > 0 && (
+        <ChartView collectedData={collectedStatistics} />
+      )}
     </div>
   )
 }
