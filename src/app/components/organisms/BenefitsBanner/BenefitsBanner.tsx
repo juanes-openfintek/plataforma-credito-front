@@ -7,63 +7,80 @@ import NextImage from '../../atoms/NextImage/NextImage'
  */
 const BenefitsBanner = () => {
   return (
-    <section id="beneficios" className='p-20 max-lg:p-8 bg-white'>
-      <h2 className='text-black max-2xl:text-4xl text-[3.75rem] text-center'>
-        ¿<span className='text-primary-color font-bold'>Qué Beneficios</span>{' '}
-        ofrece Marca Blanca Creditos?
-      </h2>
-      <div className='flex flex-row my-12 max-md:justify-start max-lg:justify-center'>
-        <div className='relative w-1/2 block max-lg:hidden lg:ml-[5rem]'>
-          <div className='absolute -left-10 -top-4 bg-white rounded-[30rem] px-6 py-3 shadow-md'>
-            <NextImage
-              src='/images/feelpay-logo.png'
-              alt='logo'
-              width={200}
-              height={76}
-            />
-          </div>
-          <NextImage
-            src='/images/group-one.png'
-            alt='Beneficios'
-            width={700}
-            height={500}
-          />
-        </div>
-        <div className='flex flex-col w-1/2 self-center'>
-          <div className='flex flex-row items-center relative max-2xl:mb-12 mb-[5rem] lg:ml-[5rem]'>
-            <NextImage
-              className='absolute max-2xl:w-[6.9rem] w-[8.9rem]'
-              src='/images/circle-dollar-icon.png'
-              alt='logo'
-              width={143}
-              height={143}
-            />
-            <div className='bg-primary-color rounded-[30rem] max-2xl:px-14 px-20 py-5 ml-20'>
-              <p className='text-white max-2xl:text-xs text-lg max-xl:w-[10rem] w-[14rem]'>Amortización cuota fija con capital e intereses.</p>
+    <section id="beneficios" className='py-20 px-4 lg:px-20 bg-gradient-to-b from-gray-50 to-white'>
+      <div className='max-w-7xl mx-auto'>
+        <h2 className='text-gray-900 text-4xl md:text-5xl lg:text-6xl text-center font-bold mb-16'>
+          ¿<span className='text-primary-color'>Qué Beneficios</span> ofrecemos?
+        </h2>
+        <div className='flex flex-col lg:flex-row gap-12 items-center'>
+          <div className='relative w-full lg:w-1/2 flex justify-center'>
+            <div className='relative'>
+              <div className='absolute -top-8 -left-8 bg-white rounded-full px-6 py-3 shadow-xl z-10 hover:scale-105 transition-transform'>
+                <NextImage
+                  src='/images/openfintek-logo.png'
+                  alt='OpenFintek logo'
+                  width={120}
+                  height={40}
+                  className='object-contain max-h-10'
+                />
+              </div>
+              <NextImage
+                src='/images/group-one.png'
+                alt='Beneficios de nuestros créditos'
+                width={600}
+                height={450}
+                className='rounded-2xl shadow-xl'
+              />
             </div>
           </div>
-          <div className='flex flex-row items-center relative max-2xl:mb-12 mb-[5rem] lg:ml-[5rem]'>
-            <NextImage
-              className='absolute  max-2xl:w-[6.9rem] w-[8.9rem]'
-              src='/images/circle-secure-icon.png'
-              alt='logo'
-              width={143}
-              height={143}
-            />
-            <div className='bg-primary-color rounded-[30rem] max-2xl:px-14 px-20 py-5 ml-20'>
-              <p className='text-white max-2xl:text-xs text-lg max-xl:w-[10rem] max-2xl:w-[18rem] w-[25rem]'>Seguro de vida deudor que cubre la obligación en caso de incapacidad total o permanente.</p>
+          <div className='flex flex-col w-full lg:w-1/2 gap-8'>
+            <div className='flex items-center gap-4 group hover:scale-105 transition-transform'>
+              <div className='flex-shrink-0 w-20 h-20 md:w-24 md:h-24 relative'>
+                <NextImage
+                  className='drop-shadow-lg group-hover:drop-shadow-2xl transition-all'
+                  src='/images/circle-dollar-icon.png'
+                  alt='Cuota fija'
+                  width={96}
+                  height={96}
+                />
+              </div>
+              <div className='bg-gradient-to-r from-primary-color to-accent-color rounded-3xl px-8 py-6 flex-1 shadow-lg hover:shadow-xl transition-shadow'>
+                <p className='text-white text-base md:text-lg font-medium leading-relaxed'>
+                  Amortización cuota fija con capital e intereses
+                </p>
+              </div>
             </div>
-          </div>
-          <div className='flex flex-row items-center relative max-2xl:mb-10 lg:ml-[5rem]'>
-            <NextImage
-              className='absolute max-2xl:w-[6.9rem] w-[8.9rem]'
-              src='/images/circle-bank-icon.png'
-              alt='logo'
-              width={143}
-              height={143}
-            />
-            <div className='bg-primary-color rounded-[30rem] max-2xl:px-14 px-20 py-5 ml-20'>
-              <p className='text-white max-2xl:text-xs text-lg max-xl:w-[10rem] max-2xl:w-[14rem] w-[18rem]'>Las condiciones del tiempo y tasa del crédito fijas de principio a fin.</p>
+            <div className='flex items-center gap-4 group hover:scale-105 transition-transform'>
+              <div className='flex-shrink-0 w-20 h-20 md:w-24 md:h-24 relative'>
+                <NextImage
+                  className='drop-shadow-lg group-hover:drop-shadow-2xl transition-all'
+                  src='/images/circle-secure-icon.png'
+                  alt='Seguridad'
+                  width={96}
+                  height={96}
+                />
+              </div>
+              <div className='bg-gradient-to-r from-primary-color to-accent-color rounded-3xl px-8 py-6 flex-1 shadow-lg hover:shadow-xl transition-shadow'>
+                <p className='text-white text-base md:text-lg font-medium leading-relaxed'>
+                  Seguro de vida deudor que cubre la obligación en caso de incapacidad total o permanente
+                </p>
+              </div>
+            </div>
+            <div className='flex items-center gap-4 group hover:scale-105 transition-transform'>
+              <div className='flex-shrink-0 w-20 h-20 md:w-24 md:h-24 relative'>
+                <NextImage
+                  className='drop-shadow-lg group-hover:drop-shadow-2xl transition-all'
+                  src='/images/circle-bank-icon.png'
+                  alt='Condiciones fijas'
+                  width={96}
+                  height={96}
+                />
+              </div>
+              <div className='bg-gradient-to-r from-primary-color to-accent-color rounded-3xl px-8 py-6 flex-1 shadow-lg hover:shadow-xl transition-shadow'>
+                <p className='text-white text-base md:text-lg font-medium leading-relaxed'>
+                  Las condiciones del tiempo y tasa del crédito fijas de principio a fin
+                </p>
+              </div>
             </div>
           </div>
         </div>

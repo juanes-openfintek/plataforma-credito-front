@@ -12,30 +12,34 @@ import UserDataForms from '../UserDataForms/UserDataForms'
 const MainBanner = () => {
   return (
     <CreditContextProvider>
-      <section id="creditos" className='flex justify-content-center bg-white pt-20 lg:p-20 lg:mt-8'>
-        <div className='w-full lg:w-1/2'>
-          <div className='flex flex-col px-8'>
-            <h2 className='text-black text-[3.75rem] max-2xl:text-4xl'>
-              ¿
-              <span className='text-primary-color font-bold'>
-                Necesitas capital
-              </span>{' '}
-              para tu negocio o emprendimiento?
-            </h2>
-            <p className='text-black text-[1.5625rem] max-2xl:text-md my-4'>
-              <span className='text-primary-color font-bold'>¡Solicítalo ya!</span> Obtén tu crédito en menos de 24 Hrs
-            </p>
-            <BasicCalculator />
+      <section id="creditos" className='flex justify-center items-center bg-gradient-to-br from-white to-gray-50 pt-24 pb-16 lg:pt-32 lg:pb-20 px-4 lg:px-20 min-h-screen'>
+        <div className='max-w-7xl w-full flex flex-col lg:flex-row items-center gap-12'>
+          <div className='w-full lg:w-1/2 animate-slide-up'>
+            <div className='flex flex-col space-y-6'>
+              <h1 className='text-gray-900 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight'>
+                ¿<span className='text-primary-color'>Necesitas capital</span> para tu negocio o emprendimiento?
+              </h1>
+              <p className='text-gray-600 text-xl md:text-2xl leading-relaxed'>
+                <span className='text-primary-color font-semibold'>¡Solicítalo ya!</span> Obtén tu crédito en menos de 24 horas
+              </p>
+              <div className='pt-4'>
+                <BasicCalculator />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className='w-1/2 px-8 hidden lg:block'>
-          <NextImage
-            className='float-right'
-            src='/images/main-banner.png'
-            alt='Next.js logo'
-            width={750}
-            height={750}
-          />
+          <div className='w-full lg:w-1/2 flex justify-center lg:justify-end'>
+            <div className='relative w-full max-w-xl'>
+              <div className='absolute inset-0 bg-gradient-to-r from-primary-color to-accent-color rounded-full blur-3xl opacity-10 animate-pulse'></div>
+              <NextImage
+                className='relative z-10 w-full h-auto drop-shadow-2xl'
+                src='/images/main-banner.png'
+                alt='Créditos para tu negocio'
+                width={750}
+                height={750}
+                priority
+              />
+            </div>
+          </div>
         </div>
       </section>
       <UserDataForms />

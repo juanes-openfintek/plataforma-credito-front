@@ -136,10 +136,11 @@ export const LoginForm = () => {
             <p className='text-center bg-red-300 py-4 mb-6 rounded'>{error}</p>
           )}
           <NextImage
-            src='/images/feelpay-logo.png'
-            alt='logo'
-            width={600}
-            height={200}
+            src='/images/openfintek-logo.png'
+            alt='OpenFintek logo'
+            width={200}
+            height={60}
+            className='self-center mb-4 object-contain max-h-16'
           />
           <div className='my-4'>
             <SimpleFieldInput
@@ -191,10 +192,11 @@ export const LoginForm = () => {
             className='flex flex-col gap-4'
           >
             <NextImage
-              src='/images/feelpay-logo.png'
-              alt='logo'
-              width={600}
-              height={200}
+              src='/images/openfintek-logo.png'
+              alt='OpenFintek logo'
+              width={200}
+              height={60}
+              className='self-center mb-4 object-contain max-h-16'
             />
             <div className='my-4'>
               <SimpleFieldInput
