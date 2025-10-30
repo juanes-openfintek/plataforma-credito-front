@@ -7,8 +7,9 @@ import SquareButton from '../../atoms/SquareButton/SquareButton'
 import DetailCalculations from '../../molecules/DetailCalculations/DetailCalculations'
 import { useCreditState } from '../../../context/creditContext'
 import { validateCreditForms } from '../../../helpers/validationsForms'
-import postCreditNoLogin from '../../../services/postCredit'
+import postCredit from '../../../services/postCredit'
 import { CreditStatusesProperties } from '../../../constants/CreditStatusesProperties'
+import CreditPreApprovalFlow from '../CreditPreApprovalFlow/CreditPreApprovalFlow'
 
 /**
  * UserDataForms is a component that renders the user data forms
@@ -28,6 +29,10 @@ const UserDataForms = () => {
    * Error message of the request
    */
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  /**
+   * State to control the credit pre-approval flow modal
+   */
+  const [showPreApprovalFlow, setShowPreApprovalFlow] = useState(false)
   /**
    * router is the router of the page
    */
@@ -82,7 +87,7 @@ const UserDataForms = () => {
       }
       values.amount = amount
       values.quotasNumber = Math.ceil(time / 30)
-      const result = await postCreditNoLogin(values)
+      const result = await postCredit(values)
       if (result === CreditStatusesProperties[0].status) {
         router.push(`/registro?email=${values.emailPersonalInfo}`)
       } else {
@@ -408,7 +413,8 @@ const UserDataForms = () => {
                   accent
                   disable={loading}
                   onClickHandler={() => {
-                    formik.handleSubmit()
+                    // Open the pre-approval flow with calculator values
+                    setShowPreApprovalFlow(true)
                   }}
                 />
               </div>
@@ -416,6 +422,47 @@ const UserDataForms = () => {
             </form>
           </section>
         </FormikProvider>
+      )}
+
+      {/* Credit Pre-Approval Flow Modal */}
+      {showPreApprovalFlow && (
+        <CreditPreApprovalFlow
+          email={formik.values.emailPersonalInfo || ''}
+          amount={amount}
+          days={time}
+          onComplete={async (creditData) => {
+            // Handle the completed credit application
+            setShowPreApprovalFlow(false)
+            setLoading(true)
+
+            // Prepare data for submission
+            const finalData = {
+              ...formik.values,
+              amount,
+              quotasNumber: Math.ceil(time / 30),
+            }
+
+            // Get the correct tax based on amount
+            if (creditTaxes) {
+              const tax = creditTaxes?.find((taxes) => {
+                return amount >= taxes.minAmount && amount <= taxes.maxAmount
+              })
+              finalData.taxes = tax?.id ?? creditTaxes[0]?.id
+            }
+
+            // Submit the credit application
+            const result = await postCredit(finalData)
+            if (result === CreditStatusesProperties[0].status) {
+              router.push(`/usuario/onboarding?email=${formik.values.emailPersonalInfo}`)
+            } else {
+              setErrorMessage('Ha ocurrido un error, intentalo de nuevo')
+              setLoading(false)
+            }
+          }}
+          onCancel={() => {
+            setShowPreApprovalFlow(false)
+          }}
+        />
       )}
     </>
   )

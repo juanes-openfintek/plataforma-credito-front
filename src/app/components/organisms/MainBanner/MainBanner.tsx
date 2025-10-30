@@ -17,10 +17,10 @@ const MainBanner = () => {
           <div className='w-full lg:w-1/2 animate-slide-up'>
             <div className='flex flex-col space-y-6'>
               <h1 className='text-gray-900 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight'>
-                ¿<span className='text-primary-color'>Necesitas capital</span> para tu negocio o emprendimiento?
+                Activa creditos digitales <span className='text-primary-color'>rapidos y sin papeles</span>
               </h1>
               <p className='text-gray-600 text-xl md:text-2xl leading-relaxed'>
-                <span className='text-primary-color font-semibold'>¡Solicítalo ya!</span> Obtén tu crédito en menos de 24 horas
+                Gestiona tarjetas de credito, libranza, libre inversion y capital de trabajo en un solo flujo digital con respuesta en menos de 24 horas.
               </p>
               <div className='pt-4'>
                 <BasicCalculator />
@@ -33,7 +33,7 @@ const MainBanner = () => {
               <NextImage
                 className='relative z-10 w-full h-auto drop-shadow-2xl'
                 src='/images/main-banner.png'
-                alt='Créditos para tu negocio'
+                alt='Creditos digitales para tu negocio'
                 width={750}
                 height={750}
                 priority

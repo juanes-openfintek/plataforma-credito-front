@@ -62,8 +62,7 @@ const CheckState = () => {
             height={450}
           />
           <h2 className='font-sans text-4xl 2xl:text-[3.125rem] leading-[3rem] text-white z-10 2xl:px-10 2xl:mr-10 max-lg:text-center self-center max-lg:mt-16'>
-            <span className='font-bold'>Consulta el estado</span> de tu crédito
-            aquí
+            <span className='font-bold'>Consulta el estado</span> de tu solicitud digital aqui
           </h2>
         </div>
         <form className='flex max-lg:flex-col max-lg:items-center w-1/2 max-2xl:text-center z-10 max-lg:w-2/3 max-lg:self-center max-lg:mt-6'>
@@ -81,7 +80,7 @@ const CheckState = () => {
             name='documentNumber'
             onChange={formik.handleChange}
             className='bg-white rounded-3xl text-black py-2 px-4 mx-4 max-lg:w-full 2xl:w-1/2 max-lg:my-3 max-lg:mx-2'
-            placeholder='Número'
+            placeholder='Numero'
           />
           <div className='w-[130px]'>
             <RoundButton
@@ -106,21 +105,20 @@ const CheckState = () => {
                     )?.text
                   }
                 </span>
-                , para mas información inicia sesión en{' '}
+                . Para mas informacion ingresa a tu portal digital en
               </p>
               <a href='/login'>
-                <RoundButton text='Iniciar sesión' />
+                <RoundButton text='Iniciar sesion' />
               </a>
             </div>
           )}
           {!state.status && (
             <div className='z-10 mx-10'>
               <p className='text-white text-2xl mb-4 text-center'>
-                No se ha encontrado un crédito asociado a este documento, puedes
-                solicitar uno ingresando a
+                No encontramos creditos asociados a este documento. Inicia una solicitud en nuestra landing para obtener tu cupo digital.
               </p>
               <a href='/login'>
-                <RoundButton text='Iniciar sesión' />
+                <RoundButton text='Iniciar sesion' />
               </a>
             </div>
           )}

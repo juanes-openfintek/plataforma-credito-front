@@ -1,24 +1,22 @@
 export const Faqs = [
   {
-    question: '¿Cuáles son los requisitos mínimos para tramitar un crédito?',
+    question: 'Que documentos necesito para solicitar un credito digital?',
     answer:
-      '<p>Es un servicio de asesoría que te permite resolver tus dudas sobre el uso de tu crédito, así como también te brinda información sobre tu estado de cuenta, fechas de pago, entre otros.</p>',
+      '<p>Necesitas tu documento de identidad, comprobante de ingresos o extractos bancarios recientes y la informacion basica de tu empresa o empleador. Los cargas desde tu celular en formato PDF.</p>',
   },
   {
-    question:
-      '¿Cuantos días debe tener la carta laboral para tramitar un crédito?',
+    question: 'En cuanto tiempo recibo el desembolso?',
     answer:
-      '<ul><li>Es un servicio de asesoría que te permite resolver tus dudas sobre el uso de tu crédito, así como también te brinda información sobre tu estado de cuenta, fechas de pago, entre otros.</li><ul>',
+      '<p>Nuestra aprobacion toma hasta 24 horas habiles y el desembolso se programa inmediatamente despues de firmar digitalmente tu contrato.</p>',
   },
   {
-    question: '¿La cuota de mi crédito es fija o es variable?',
+    question: 'Que tipos de credito puedo solicitar?',
     answer:
-      '<p>Es un servicio de asesoría que te permite resolver tus dudas sobre el uso de tu crédito, así como también te brinda información sobre tu estado de cuenta, fechas de pago, entre otros.</p>',
+      '<ul><li>Tarjetas empresariales para compras y gastos operativos.</li><li>Credito por libranza con descuento automatico de nomina o pension.</li><li>Creditos de libre inversion y capital de trabajo para proyectos puntuales.</li></ul>',
   },
   {
-    question:
-      '¿Cuantos días debe tener la carta laboral para tramitar un crédito?',
+    question: 'Las cuotas permanecen fijas durante todo el credito?',
     answer:
-      '<p>Si puede realizar hipoteca sobre bien inmueble, para adquirir un crédito.</p>',
+      '<p>Si. Te mostramos la taza aprobada, la cuota mensual y el calendario de pagos antes de firmar para que sepas exactamente cuanto pagaras.</p>',
   },
 ]

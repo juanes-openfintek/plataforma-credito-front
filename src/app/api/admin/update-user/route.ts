@@ -2,6 +2,13 @@ import axios from 'axios'
 import { NextResponse, NextRequest } from 'next/server'
 import decryptData from '../../../helpers/decryptData'
 
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Method not allowed' },
+    { status: 405 }
+  )
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const decryptedData = await decryptData(body.token)

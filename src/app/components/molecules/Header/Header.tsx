@@ -64,7 +64,7 @@ const Header = () => {
             href='/#creditos'
             className='text-gray-700 hover:text-primary-color mx-2 px-4 py-2 max-lg:hidden transition-all'
           >
-            Créditos
+            Creditos digitales
           </Link>
           <Link
             href='/#beneficios'
@@ -76,7 +76,7 @@ const Header = () => {
             href='/#nosotros'
             className='text-gray-700 hover:text-primary-color mx-2 px-4 py-2 max-lg:hidden transition-all'
           >
-            Nosotros
+            Equipo
           </Link>
           <Link
             href='/#preguntas'
@@ -88,7 +88,7 @@ const Header = () => {
             href='/#contactanos'
             className='text-gray-700 hover:text-primary-color mx-2 px-4 py-2 max-lg:hidden transition-all'
           >
-            Contáctanos
+            Contacto
           </Link>
           <Link
             href={userData?.token ? redirectionByRole(userData?.roles ?? 'user') : '/login'}
@@ -135,7 +135,7 @@ const Header = () => {
               className='my-3 py-3 px-4 w-full text-gray-700 hover:bg-gray-50 hover:text-primary-color rounded transition-all'
               onClick={() => setIsMenuOpen(false)}
             >
-              Créditos
+              Creditos digitales
             </Link>
             <Link
               href='/#beneficios'
@@ -149,7 +149,7 @@ const Header = () => {
               className='my-3 py-3 px-4 w-full text-gray-700 hover:bg-gray-50 hover:text-primary-color rounded transition-all'
               onClick={() => setIsMenuOpen(false)}
             >
-              Nosotros
+              Equipo
             </Link>
             <Link
               href='/#preguntas'
@@ -163,7 +163,7 @@ const Header = () => {
               className='my-3 py-3 px-4 w-full text-gray-700 hover:bg-gray-50 hover:text-primary-color rounded transition-all'
               onClick={() => setIsMenuOpen(false)}
             >
-              Contáctanos
+              Contacto
             </Link>
           </nav>
         </>

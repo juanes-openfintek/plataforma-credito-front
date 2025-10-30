@@ -15,16 +15,14 @@ const StepsBanner = () => {
               <NextImage
                 className='filter brightness-0 invert'
                 src='/images/workspace-premium.png'
-                alt='Cómo funciona'
+                alt='Como funciona'
                 width={48}
                 height={48}
               />
             </div>
-            <h3 className='text-2xl lg:text-3xl font-bold mb-6'>¿Cómo funciona?</h3>
+            <h3 className='text-2xl lg:text-3xl font-bold mb-6'>Como funciona la experiencia digital</h3>
             <p className='text-base lg:text-lg leading-relaxed text-white/90'>
-              Nuestro sistema de crédito rotativo te permite acceder a un cupo aprobado.
-              Solicitas desembolsos según tus necesidades y, a medida que pagas, recuperas
-              tu cupo disponible.
+              Preaprobamos tu cupo, firmas en linea y desembolsamos donde lo necesites. Cada pago libera nuevamente tu capacidad de credito.
             </p>
           </div>
           <div className='flex flex-col items-center text-center p-8 bg-white/10 backdrop-blur-sm rounded-3xl hover:bg-white/20 transition-all duration-300 hover:scale-105 z-10'>
@@ -32,15 +30,14 @@ const StepsBanner = () => {
               <NextImage
                 className='filter brightness-0 invert'
                 src='/images/edit-note.png'
-                alt='Requisitos'
+                alt='Requisitos digitales'
                 width={48}
                 height={48}
               />
             </div>
-            <h3 className='text-2xl lg:text-3xl font-bold mb-6'>¿Qué requisitos?</h3>
+            <h3 className='text-2xl lg:text-3xl font-bold mb-6'>Que requisitos pedimos</h3>
             <p className='text-base lg:text-lg leading-relaxed text-white/90'>
-              Si eres mayor de edad y resides en Colombia, ya cumples la mitad de los requisitos.
-              Los demás son igual de simples: documentos básicos y información de tu negocio.
+              Documento, soporte de ingresos y datos basicos de tu empresa o empleo. Los cargas en PDF y nuestro motor los valida al instante.
             </p>
           </div>
           <div className='flex flex-col items-center text-center p-8 bg-white/10 backdrop-blur-sm rounded-3xl hover:bg-white/20 transition-all duration-300 hover:scale-105 z-10'>
@@ -48,15 +45,14 @@ const StepsBanner = () => {
               <NextImage
                 className='filter brightness-0 invert'
                 src='/images/credit-card.png'
-                alt='Costos'
+                alt='Costos claros'
                 width={48}
                 height={48}
               />
             </div>
-            <h3 className='text-2xl lg:text-3xl font-bold mb-6'>¿Cuánto cuesta?</h3>
+            <h3 className='text-2xl lg:text-3xl font-bold mb-6'>Cuanto cuesta</h3>
             <p className='text-base lg:text-lg leading-relaxed text-white/90'>
-              Transparencia total: te explicamos cada cargo sin costos ocultos ni letra pequeña.
-              Además, te mostramos cómo optimizar tus pagos para reducir intereses.
+              Tasas transparentes, cuotas fijas y panel de seguimiento para que sepas cada cargo antes de aceptar.
             </p>
           </div>
         </div>
@@ -64,7 +60,7 @@ const StepsBanner = () => {
       <NextImage
         className='absolute -bottom-40 right-0 opacity-30 pointer-events-none'
         src='/images/dots-right.png'
-        alt='Decoración'
+        alt='Decoracion'
         width={250}
         height={250}
       />

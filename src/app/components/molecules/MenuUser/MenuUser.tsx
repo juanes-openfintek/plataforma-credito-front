@@ -94,7 +94,7 @@ const MenuUser = () => {
         }`}
       >
         <NextImage
-          className='mx-auto filter brightness-0 invert object-contain max-h-12'
+          className='mx-auto object-contain max-h-12'
           src='/images/openfintek-logo.png'
           alt='OpenFintek logo'
           width={140}

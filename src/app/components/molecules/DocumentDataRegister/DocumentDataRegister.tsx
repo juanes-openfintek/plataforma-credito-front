@@ -49,144 +49,140 @@ const DocumentDataRegister = ({
    */
   const handleSendData = async () => {
     setLoading(true)
-    await axios
-      .post('/api/auth/register', {
+    try {
+      const registerResponse = await axios.post('/api/auth/register', {
         token: encryptData({
           email: registerData?.email,
           password: registerData?.password,
         }),
       })
-      .then(async (res: any) => {
-        const token = res.data.token;
-        const fileUploaded = postNewFile(file)
-        const splitName = registerData?.name?.trim()?.split(' ')
-        const nameFormatted = splitName[0]
-        let middleNameFormatted
-        if (splitName.length > 1) {
-          middleNameFormatted = splitName[1]
-        }
-        const splitLastname = registerData?.lastName?.trim()?.split(' ')
-        const lastnameFormatted = splitLastname[0]
-        let secondLastnameFormatted
-        if (splitName.length > 1) {
-          secondLastnameFormatted = splitLastname[1]
-        }
-        const update = axios.put(
-          process.env.NEXT_PUBLIC_BACKEND_URL + '/auth/update-user',
-          {
-            name: nameFormatted,
-            lastname: lastnameFormatted,
-            secondName: middleNameFormatted,
-            secondLastname: secondLastnameFormatted,
-            phoneNumber: registerData?.phoneNumber,
-            dateOfBirth: registerData?.dateOfBirth,
-            documentType: registerData?.documentType,
-            documentNumber: registerData?.documentNumber,
-          },
-          {
-            headers: {
-              'x-security-token': process.env.NEXT_PUBLIC_SECURITY_TOKEN,
-              Authorization: 'Bearer ' + res.data.token,
+
+      const token: string | undefined = registerResponse?.data?.token
+
+      const certificateFormData = new FormData()
+      certificateFormData.append('file', file)
+      try {
+        await postNewFile(certificateFormData)
+      } catch (uploadError) {
+        console.warn(
+          'Carga de certificado omitida (modo demo).',
+          (uploadError as any)?.message ?? uploadError
+        )
+      }
+
+      const splitName = registerData?.name?.trim()?.split(' ') ?? []
+      const splitLastname = registerData?.lastName?.trim()?.split(' ') ?? []
+      const nameFormatted = splitName[0]
+      const middleNameFormatted = splitName.length > 1 ? splitName[1] : undefined
+      const lastnameFormatted = splitLastname[0]
+      const secondLastnameFormatted =
+        splitLastname.length > 1 ? splitLastname[1] : undefined
+
+      if (token) {
+        try {
+          await axios.put(
+            process.env.NEXT_PUBLIC_BACKEND_URL + '/auth/update-user',
+            {
+              name: nameFormatted,
+              lastname: lastnameFormatted,
+              secondName: middleNameFormatted,
+              secondLastname: secondLastnameFormatted,
+              phoneNumber: registerData?.phoneNumber,
+              dateOfBirth: registerData?.dateOfBirth,
+              documentType: registerData?.documentType,
+              documentNumber: registerData?.documentNumber,
             },
-          }
-        )
-        Promise.all([fileUploaded, update])
-          .then(async (values) => {
-            const bank = bankAllData.find(
-              (bank: any) => bank.name === registerData?.accountEntity
-            )
-            await axios
-              .post(
-                process.env.NEXT_PUBLIC_BACKEND_URL + '/account/add-account',
-                {
-                  accountNumber: encryptCryptoData(registerData?.accountNumber),
-                  accountType: registerData?.accountType,
-                  accountEntity: registerData?.accountEntity,
-                  urlCertificate: values[0],
-                  detail: bank,
-                  isActive: true,
-                  default: true,
-                },
-                {
-                  headers: {
-                    'x-security-token': process.env.NEXT_PUBLIC_SECURITY_TOKEN,
-                    Authorization: 'Bearer ' + token,
-                  },
-                }
-              )
-              .then(async (res: any) => {
-                await postVerifyCreditUser(token ?? '')
-                if (res.data.user) {
-                  const callbackUrl = '/usuario/creditos'
-                  const login = await signIn('credentials', {
-                    redirect: false,
-                    email: registerData?.email,
-                    password: registerData?.password,
-                    callbackUrl,
-                  })
-                  setLoading(false)
-                  if (!login?.error) {
-                    router.push(callbackUrl)
-                  }
-                } else {
-                  return null
-                }
-              })
-              .catch(() => {
-                saveMessage('Ha ocurrido un problema')
-                saveUserData(
-                  '',
-                  '',
-                  registerData.name,
-                  registerData.lastName,
-                  registerData.phoneNumber,
-                  registerData.dateOfBirth,
-                  registerData.documentType,
-                  registerData.documentNumber,
-                  registerData.accountType,
-                  registerData.accountNumber,
-                  registerData.accountEntity
-                )
-              })
-          })
-          .catch(async () => {
-            await postDeleteSelfUser(token)
-            saveMessage('Ha ocurrido un problema')
-            saveUserData(
-              '',
-              '',
-              registerData.name,
-              registerData.lastName,
-              registerData.phoneNumber,
-              registerData.dateOfBirth,
-              registerData.documentType,
-              registerData.documentNumber,
-              registerData.accountType,
-              registerData.accountNumber,
-              registerData.accountEntity
-            )
-          })
-      })
-      .catch((err: any) => {
-        saveMessage('Ha ocurrido un problema')
-        if (err?.response?.status === 409) {
-          saveMessage('El correo electrónico ya está registrado')
+            {
+              headers: {
+                'x-security-token': process.env.NEXT_PUBLIC_SECURITY_TOKEN,
+                Authorization: 'Bearer ' + token,
+              },
+            }
+          )
+        } catch (updateError) {
+          console.warn(
+            'Actualizacion de datos omitida (modo demo).',
+            (updateError as any)?.message ?? updateError
+          )
         }
-        saveUserData(
-          '',
-          '',
-          registerData.name,
-          registerData.lastName,
-          registerData.phoneNumber,
-          registerData.dateOfBirth,
-          registerData.documentType,
-          registerData.documentNumber,
-          registerData.accountType,
-          registerData.accountNumber,
-          registerData.accountEntity
+
+        const bank = bankAllData.find(
+          (item: any) => item.name === registerData?.accountEntity
         )
-        setLoading(false)
+
+        try {
+          await axios.post(
+            process.env.NEXT_PUBLIC_BACKEND_URL + '/account/add-account',
+            {
+              accountNumber: encryptCryptoData(registerData?.accountNumber),
+              accountType: registerData?.accountType,
+              accountEntity: registerData?.accountEntity,
+              urlCertificate: 'demo-certificate',
+              detail: bank,
+              isActive: true,
+              default: true,
+            },
+            {
+              headers: {
+                'x-security-token': process.env.NEXT_PUBLIC_SECURITY_TOKEN,
+                Authorization: 'Bearer ' + token,
+              },
+            }
+          )
+        } catch (accountError) {
+          console.warn(
+            'Creacion de cuenta bancaria omitida (modo demo).',
+            (accountError as any)?.message ?? accountError
+          )
+        }
+
+        try {
+          await postVerifyCreditUser(token)
+        } catch (verifyError) {
+          console.warn(
+            'Verificacion de credito omitida (modo demo).',
+            (verifyError as any)?.message ?? verifyError
+          )
+        }
+      }
+
+      const callbackUrl = '/usuario/onboarding'
+      const login = await signIn('credentials', {
+        redirect: false,
+        email: registerData?.email,
+        password: registerData?.password,
+        callbackUrl,
       })
+
+      if (login?.error) {
+        console.warn('Inicio de sesión fallido:', login.error)
+        saveMessage('No fue posible iniciar sesión automáticamente.')
+        setLoading(false)
+        return
+      }
+
+      router.push(callbackUrl)
+    } catch (err: any) {
+      saveMessage('Ha ocurrido un problema')
+      if (axios.isAxiosError(err) && err?.response?.status === 409) {
+        saveMessage('El correo electrónico ya está registrado')
+      }
+      saveUserData(
+        '',
+        '',
+        registerData.name,
+        registerData.lastName,
+        registerData.phoneNumber,
+        registerData.dateOfBirth,
+        registerData.documentType,
+        registerData.documentNumber,
+        registerData.accountType,
+        registerData.accountNumber,
+        registerData.accountEntity
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -231,3 +227,5 @@ const DocumentDataRegister = ({
 }
 
 export default DocumentDataRegister
+
+

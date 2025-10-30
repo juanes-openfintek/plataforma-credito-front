@@ -118,17 +118,17 @@ const RangeCalculator = ({ formik, row }: RangeCalculatorProps) => {
           type='text'
           min='1'
           readOnly
-          max={process.env.NEXT_PUBLIC_MAX_DAYS}
-          placeholder={`De 1 a ${process.env.NEXT_PUBLIC_MAX_DAYS} días`}
+          max={72}
+          placeholder='De 1 a 72 meses'
           onChange={formik.handleChange}
-          value={`${formik.values.daysRange}${formik.values.daysRange ? ' días' : ''}`}
+          value={`${formik.values.daysRange}${formik.values.daysRange ? ' meses' : ''}`}
         />
         <input
           id='days-range-slider'
           type='range'
           name='daysRange'
           min={1}
-          max={Number(process.env.NEXT_PUBLIC_MAX_DAYS)}
+          max={72}
           step={1}
           onChange={formik.handleChange}
           value={formik.values.daysRange ? formik.values.daysRange : 0}

@@ -12,26 +12,23 @@ const GrowthBanner = () => {
         <div className='flex flex-col lg:flex-row items-center gap-12 lg:gap-16 text-white'>
           <div className='w-full lg:w-1/2 space-y-6 z-10'>
             <h2 className='text-4xl md:text-5xl lg:text-6xl font-bold leading-tight'>
-              ¡Crecemos <span className='font-extrabold text-white drop-shadow-lg'>junto a ti</span>!
+              Crecemos contigo digitalizando el acceso al credito
             </h2>
             <p className='text-lg md:text-xl leading-relaxed text-white/90'>
-              Somos una plataforma fintech comprometida con el crecimiento de tu negocio.
-              Ofrecemos soluciones de financiamiento rápidas, seguras y transparentes, diseñadas
-              especialmente para emprendedores y empresarios que buscan impulsar sus proyectos.
-              Con nosotros, el financiamiento es simple y confiable.
+              Somos la plataforma que convierte cada solicitud en una experiencia 100 por ciento digital. Unificamos tarjetas empresariales, libranza y creditos de libre inversion para que tu equipo tenga capital inmediato sin desgaste operativo.
             </p>
             <div className='flex flex-wrap gap-4 pt-4'>
               <div className='bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-white/30 transition-all'>
-                <p className='text-2xl font-bold'>24hrs</p>
-                <p className='text-sm'>Respuesta rápida</p>
+                <p className='text-2xl font-bold'>24h</p>
+                <p className='text-sm'>Aprobacion digital</p>
               </div>
               <div className='bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-white/30 transition-all'>
                 <p className='text-2xl font-bold'>100%</p>
-                <p className='text-sm'>Digital</p>
+                <p className='text-sm'>Proceso online</p>
               </div>
               <div className='bg-white/20 backdrop-blur-sm rounded-2xl px-6 py-4 hover:bg-white/30 transition-all'>
-                <p className='text-2xl font-bold'>0</p>
-                <p className='text-sm'>Trámites complejos</p>
+                <p className='text-2xl font-bold'>Multi</p>
+                <p className='text-sm'>Productos en un lugar</p>
               </div>
             </div>
           </div>
@@ -49,7 +46,7 @@ const GrowthBanner = () => {
       <NextImage
         className='absolute left-0 -bottom-32 opacity-30 pointer-events-none'
         src='/images/dots-left-two.png'
-        alt='Decoración'
+        alt='Decoracion'
         width={300}
         height={300}
       />

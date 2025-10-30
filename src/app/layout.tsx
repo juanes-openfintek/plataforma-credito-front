@@ -27,7 +27,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang='en' className={`${font.variable} ${sansFont.variable}`}>
+    <html lang='es' className={`${font.variable} ${sansFont.variable}`}>
+      <head>
+        <meta charSet='utf-8' />
+      </head>
       <body className='font-sans'>
         <NextTopLoader color='#01b8e5' showSpinner={false} />
         {children}

@@ -40,32 +40,40 @@ const DetailCalculations = () => {
    * useEffect to update the taxes values using the amount as base
    */
   useEffect(() => {
-    if (amount === 0) return
-    if (creditTaxes) {
+    if (amount === 0 || time === 0) return
+    if (creditTaxes && creditTaxes.length > 0) {
       const tax = creditTaxes?.find((taxes) => {
         return amount >= taxes.minAmount && amount <= taxes.maxAmount
       })
       calculateInterest(tax)
     }
-  }, [amount, time])
+  }, [amount, time, creditTaxes])
   /**
    * Function to calculate the interest
    * @returns The interest value
    */
   const calculateInterest = (tax?: Taxes) => {
+    if (!tax || time === 0) {
+      setInterest(0)
+      setInsurance(0)
+      setAdministration(0)
+      setIva(0)
+      return
+    }
+
     let finalValue: number | 0 = 0
 
-    if (time === Number(process.env.NEXT_PUBLIC_MAX_DAYS)) {
-      finalValue = amount * ((tax?.eaPercentage ?? 0) / 100)
+    // Si es 12 meses o más, usa la tasa anual efectiva (eaPercentage)
+    // Si es menos de 12 meses, usa la tasa mensual efectiva (emPercentage)
+    if (time >= 12) {
+      finalValue = amount * ((tax.eaPercentage ?? 0) / 100)
     } else {
-      finalValue = amount * ((tax?.emPercentage ?? 0) / 100)
+      finalValue = amount * ((tax.emPercentage ?? 0) / 100) * time
     }
     setInterest(finalValue)
-    setInsurance(amount * ((tax?.insurancePercentage ?? 0) / 100)
-    )
-    setAdministration(amount * ((tax?.administrationPercentage ?? 0) / 100)
-    )
-    setIva(amount * ((tax?.ivaPercentage ?? 0)) / 100)
+    setInsurance(amount * ((tax.insurancePercentage ?? 0) / 100) * time)
+    setAdministration(amount * ((tax.administrationPercentage ?? 0) / 100) * time)
+    setIva(amount * ((tax.ivaPercentage ?? 0) / 100) * time)
   }
 
   /**
@@ -83,7 +91,7 @@ const DetailCalculations = () => {
           Valor total del préstamo
         </p>
         <p className='w-1/3 text-right text-xl lg:text-2xl 2xl:text-[2.25rem]'>
-          {time > 0 && time < 366
+          {time > 0 && time <= 72
             ? convertNumberToCurrency(calculateAllCost())
             : convertNumberToCurrency(amount / 1)}
         </p>

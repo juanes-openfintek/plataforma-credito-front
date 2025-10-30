@@ -53,7 +53,7 @@ const UserFormNewAccount = ({
   const uploadFile = async () => {
     const bodyFormData = new FormData()
     bodyFormData.append('file', file)
-    return postNewFile(file)
+    return postNewFile(bodyFormData)
   }
   /**
    * useEffect to fetch the banks

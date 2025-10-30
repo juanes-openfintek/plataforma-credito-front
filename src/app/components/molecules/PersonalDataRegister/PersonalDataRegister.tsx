@@ -244,6 +244,7 @@ const PersonalDataRegister = ({
         <div className='flex mx-auto mt-6 mb-12 max-md:w-[90%] w-[500px]'>
           <SquareButton
             text='Siguiente'
+            type='button'
             onClickHandler={() => {
               formik.handleSubmit()
             }}
