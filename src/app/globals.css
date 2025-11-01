@@ -20,21 +20,21 @@
 }
 
 :root {
-  --primary-color: #01b8e5;
+  --primary-color: #7C3AED;
   --secondary-color: #ffffff;
-  --accent-color: #0046a8;
-  --accent-light-color: #5cb7e3;
-  --error-color: #ed4343;
-  --light-color-one: #f1f1f1;
+  --accent-color: #9333EA;
+  --accent-light-color: #A78BFA;
+  --error-color: #EF4444;
+  --light-color-one: #F5F3FF;
   --light-color-two: #a5a5a5;
-  --light-color-three: #d9d9d9;
-  --progress-color: #ffdc62;
-  --success-color: #a1f879;
-  --success-color-two: #62a145;
-  --reject-color: #f97676;
-  --no-sign-color: #f9a676;
-  --signed-color:rgb(168, 81, 30);
-  --delay-color: #9f1bc0;
+  --light-color-three: #E9D5FF;
+  --progress-color: #FBBF24;
+  --success-color: #10B981;
+  --success-color-two: #059669;
+  --reject-color: #EF4444;
+  --no-sign-color: #F59E0B;
+  --signed-color: #7C3AED;
+  --delay-color: #FBBF24;
 }
 
 * {
@@ -53,16 +53,7 @@ html {
 }
 
 input[type='date']::-webkit-calendar-picker-indicator {
-  background: transparent;
-  bottom: 0;
-  color: transparent;
   cursor: pointer;
-  height: auto;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: auto;
 }
 
 /* input[type='date']:in-range::-webkit-datetime-edit-year-field,

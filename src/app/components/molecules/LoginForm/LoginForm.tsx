@@ -183,6 +183,11 @@ export const LoginForm = () => {
               text='Registrarse'
             />
           </Link>
+          <Link href='/registro-comercial'>
+            <SquareButton
+              text='Portal Comercial'
+            />
+          </Link>
         </form>
       )}
       {resetPasswordVisible && (

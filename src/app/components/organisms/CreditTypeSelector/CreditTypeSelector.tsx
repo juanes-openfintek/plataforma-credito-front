@@ -26,7 +26,7 @@ const creditTypes: CreditType[] = [
     id: 'libranza',
     title: 'Crédito de Libranza',
     image: '/images/dinero.png',
-    route: '/credito-consumo',
+    route: '/credito-libranza',
     position: 'bottom-left',
     startPosition: { x: -150, y: 200 },
   },
