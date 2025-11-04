@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { CreacionFormData } from '../CreacionModule/CreacionModule'
+import { calculateSimulation as calculateSimulationAPI, saveSimulation } from '../../../../services/commercialSimulation'
 
 interface Props {
   formData: CreacionFormData
@@ -146,13 +147,42 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
     setSubStep(4) // Ir a resultados
   }
 
-  const handleFinalSubmit = () => {
-    onNext({
-      creditAmount: simulationResult?.totalAmount || simulationData.desiredAmount,
-      creditTerm: simulationResult?.term || simulationData.desiredTerm,
-      monthlyIncome: simulationData.monthlyIncome,
-      monthlyExpenses: simulationData.monthlyDeductions.reduce((sum, d) => sum + d.amount, 0),
-    })
+  const handleFinalSubmit = async () => {
+    try {
+      // Guardar la simulación en el backend (opcional)
+      // Esto ayuda a tener un registro de las simulaciones realizadas
+      if (simulationResult) {
+        const simulationToSave = {
+          ...simulationData,
+          clientName: `${formData.firstName} ${formData.lastName}`,
+          clientDocument: formData.identificationNumber,
+        }
+        
+        // Opcional: guardar la simulación en el backend
+        // const savedSimulation = await saveSimulation(simulationToSave)
+        // console.log('Simulación guardada:', savedSimulation)
+      }
+      
+      // Pasar los datos al siguiente paso
+      onNext({
+        creditAmount: simulationResult?.deliverableAmount || simulationData.desiredAmount,
+        creditTerm: simulationResult?.term || simulationData.desiredTerm,
+        monthlyPayment: simulationResult?.monthlyPayment,
+        totalInterest: simulationResult?.interest,
+        totalToPay: simulationResult?.totalToPay,
+        monthlyIncome: simulationData.monthlyIncome,
+        monthlyExpenses: simulationData.monthlyDeductions.reduce((sum, d) => sum + d.amount, 0),
+      })
+    } catch (error) {
+      console.error('Error al procesar simulación:', error)
+      // Continuar de todas formas
+      onNext({
+        creditAmount: simulationResult?.deliverableAmount || simulationData.desiredAmount,
+        creditTerm: simulationResult?.term || simulationData.desiredTerm,
+        monthlyIncome: simulationData.monthlyIncome,
+        monthlyExpenses: simulationData.monthlyDeductions.reduce((sum, d) => sum + d.amount, 0),
+      })
+    }
   }
 
   const addDeduction = () => {

@@ -9,6 +9,8 @@ import Step6RiskCentral from '../CreacionSteps/Step6RiskCentral'
 import Step7Simulator from '../CreacionSteps/Step7Simulator'
 import Step8Requirements from '../CreacionSteps/Step8Requirements'
 import Step9DetailedForms from '../CreacionSteps/Step9DetailedForms'
+import { createCliente, updateCliente } from '../../../../services/commercialClientes'
+import { useRouter } from 'next/navigation'
 
 export interface CreacionFormData {
   // Step 1
@@ -17,8 +19,9 @@ export interface CreacionFormData {
   phone?: string
   // Step 2
   otp?: string
+  otpVerified?: boolean
   // Step 3
-  pensioneRaIssuer?: string
+  pensionIssuer?: string
   pensionType?: string
   // Step 4
   firstName?: string
@@ -30,34 +33,148 @@ export interface CreacionFormData {
   monthlyIncome?: number
   monthlyExpenses?: number
   creditExperience?: string
+  // Step 6
+  riskStatus?: string
+  riskScore?: number
+  riskDetails?: any
   // Step 7
   creditAmount?: number
   creditTerm?: number
+  monthlyPayment?: number
+  totalInterest?: number
+  totalToPay?: number
+  simulationId?: string
   // Step 8
   requirements?: File[]
+  documents?: any[]
   // Step 9
-  insurability?: string
+  healthStatus?: string
+  disability?: string
   idIssuancePlace?: string
   idIssuanceDate?: string
   birthPlace?: string
   birthCountry?: string
-  education?: string
+  educationLevel?: string
   maritalStatus?: string
-  references?: any[]
   laborInfo?: any
-  financialInfo?: any
+  financialDetails?: any
 }
 
 const CreacionModule = () => {
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<CreacionFormData>({})
+  const [clienteId, setClienteId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const totalSteps = 8 // Reduced from 9 (removed Step5 Financial Info)
 
-  const handleNextStep = (newData: Partial<CreacionFormData>) => {
-    setFormData({ ...formData, ...newData })
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1)
+  const handleNextStep = async (newData: Partial<CreacionFormData>) => {
+    const updatedFormData = { ...formData, ...newData }
+    setFormData(updatedFormData)
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      // Step 1: Crear cliente con información básica
+      if (currentStep === 1 && !clienteId) {
+        const clienteData = {
+          identificationType: updatedFormData.identificationType,
+          identificationNumber: updatedFormData.identificationNumber,
+          phone: updatedFormData.phone,
+        }
+        const createdCliente = await createCliente(clienteData)
+        setClienteId(createdCliente._id)
+        console.log('Cliente creado:', createdCliente._id)
+      }
+      // Step 2: Actualizar con verificación OTP
+      else if (currentStep === 2 && clienteId) {
+        await updateCliente(clienteId, {
+          otpVerified: true,
+        })
+        console.log('OTP verificado')
+      }
+      // Step 3: Actualizar con datos de pensión
+      else if (currentStep === 3 && clienteId) {
+        await updateCliente(clienteId, {
+          pensionIssuer: updatedFormData.pensionIssuer,
+          pensionType: updatedFormData.pensionType,
+        })
+        console.log('Datos de pensión guardados')
+      }
+      // Step 4: Actualizar con datos básicos
+      else if (currentStep === 4 && clienteId) {
+        await updateCliente(clienteId, {
+          firstName: updatedFormData.firstName,
+          lastName: updatedFormData.lastName,
+          birthDate: updatedFormData.birthDate,
+          email: updatedFormData.email,
+          gender: updatedFormData.gender,
+        })
+        console.log('Datos básicos guardados')
+      }
+      // Step 5 (RiskCentral): Actualizar con datos de riesgo
+      else if (currentStep === 5 && clienteId) {
+        await updateCliente(clienteId, {
+          riskStatus: updatedFormData.riskStatus || 'pendiente',
+          riskScore: updatedFormData.riskScore,
+          riskDetails: updatedFormData.riskDetails,
+        })
+        console.log('Datos de riesgo guardados')
+      }
+      // Step 6 (Simulator): Actualizar con datos de simulación
+      else if (currentStep === 6 && clienteId) {
+        await updateCliente(clienteId, {
+          creditAmount: updatedFormData.creditAmount,
+          creditTerm: updatedFormData.creditTerm,
+          monthlyPayment: updatedFormData.monthlyPayment,
+          totalInterest: updatedFormData.totalInterest,
+          totalToPay: updatedFormData.totalToPay,
+          monthlyIncome: updatedFormData.monthlyIncome,
+          monthlyExpenses: updatedFormData.monthlyExpenses,
+        })
+        console.log('Simulación guardada')
+      }
+      // Step 7 (Requirements): Actualizar con documentos subidos
+      else if (currentStep === 7 && clienteId) {
+        await updateCliente(clienteId, {
+          documents: updatedFormData.documents || [],
+        })
+        console.log('Documentos guardados')
+      }
+      // Step 8 (DetailedForms): Actualizar con formularios detallados y finalizar
+      else if (currentStep === 8 && clienteId) {
+        await updateCliente(clienteId, {
+          healthStatus: updatedFormData.healthStatus,
+          disability: updatedFormData.disability,
+          idIssuancePlace: updatedFormData.idIssuancePlace,
+          idIssuanceDate: updatedFormData.idIssuanceDate,
+          birthPlace: updatedFormData.birthPlace,
+          birthCountry: updatedFormData.birthCountry,
+          educationLevel: updatedFormData.educationLevel,
+          maritalStatus: updatedFormData.maritalStatus,
+          laborInfo: updatedFormData.laborInfo,
+          financialDetails: updatedFormData.financialDetails,
+          status: 'completado', // Marcar como completado
+        })
+        console.log('Formularios detallados guardados - Cliente completado')
+        
+        // Mostrar mensaje de éxito y redirigir
+        alert('¡Crédito radicado exitosamente! 🎉')
+        router.push('/comercial') // Redirigir al dashboard
+        return
+      }
+
+      // Avanzar al siguiente paso
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1)
+      }
+    } catch (err: any) {
+      console.error('Error guardando datos:', err)
+      setError(err.response?.data?.message || 'Error al guardar los datos. Intenta nuevamente.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -68,7 +185,9 @@ const CreacionModule = () => {
   }
 
   const handleStepChange = (step: number) => {
-    setCurrentStep(step)
+    if (!isLoading) {
+      setCurrentStep(step)
+    }
   }
 
   const getStepComponent = () => {
@@ -111,7 +230,37 @@ const CreacionModule = () => {
       <div className='mb-6'>
         <h2 className='text-4xl font-bold text-gray-900 mb-2'>Nuevo Crédito</h2>
         <p className='text-gray-600'>Completa el formulario paso a paso</p>
+        {clienteId && (
+          <p className='text-sm text-green-600 mt-2'>
+            ✓ Cliente ID: {clienteId.substring(0, 8)}...
+          </p>
+        )}
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className='bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-xl flex items-start gap-3'>
+          <span className='text-xl'>⚠️</span>
+          <div className='flex-1'>
+            <p className='font-semibold'>Error</p>
+            <p className='text-sm'>{error}</p>
+          </div>
+          <button
+            onClick={() => setError(null)}
+            className='text-red-600 hover:text-red-800 font-bold'
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className='bg-blue-50 border border-blue-300 text-blue-800 px-4 py-3 rounded-xl flex items-center gap-3'>
+          <div className='w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
+          <p className='font-semibold'>Guardando datos...</p>
+        </div>
+      )}
 
       {/* Progress Bar */}
       <div className='bg-white rounded-2xl shadow-md p-6 border border-purple-100'>
@@ -183,7 +332,7 @@ const CreacionModule = () => {
       <div className='flex gap-4 justify-between items-center'>
         <button
           onClick={handlePreviousStep}
-          disabled={currentStep === 1}
+          disabled={currentStep === 1 || isLoading}
           className='px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300'
         >
           ← Anterior
@@ -202,18 +351,8 @@ const CreacionModule = () => {
           </div>
         </div>
 
-        {currentStep === totalSteps ? (
-          <button className='px-6 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300'>
-            Finalizar ✓
-          </button>
-        ) : (
-          <button
-            onClick={() => handleNextStep({})}
-            className='px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300'
-          >
-            Siguiente →
-          </button>
-        )}
+        {/* Los botones de siguiente se manejan en los componentes de cada paso */}
+        <div className='w-32'></div>
       </div>
     </div>
   )

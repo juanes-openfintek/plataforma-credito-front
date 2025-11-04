@@ -52,26 +52,82 @@ export const CommercialAuthProvider = ({ children }: CommercialAuthProviderProps
   }, [])
 
   const login = async (usuario: string, codigo: string): Promise<boolean> => {
-    // Validación demo - en producción esto debería llamar a un API
-    if (usuario === DEMO_USUARIO && codigo === DEMO_CODIGO) {
-      const mockToken = `demo-token-${Date.now()}`
-      
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('comercial_token', mockToken)
-        sessionStorage.setItem('comercial_user', usuario)
-        sessionStorage.setItem('comercial_user_data', JSON.stringify({
-          usuario,
-          nombre: 'Comercial Demo',
-          email: 'comercial@demo.com',
-        }))
-      }
+    try {
+      // Intentar login con el backend real
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login-commercial`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-security-token': process.env.NEXT_PUBLIC_SECURITY_TOKEN || '',
+        },
+        body: JSON.stringify({
+          usuario: usuario,
+          codigo: codigo,
+        }),
+      })
 
-      setToken(mockToken)
-      setUser(usuario)
-      setIsAuthenticated(true)
-      return true
+      if (response.ok) {
+        const data = await response.json()
+        const realToken = data.token
+        
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('comercial_token', realToken)
+          sessionStorage.setItem('comercial_user', usuario)
+          sessionStorage.setItem('comercial_user_data', JSON.stringify(data.user || {}))
+        }
+
+        setToken(realToken)
+        setUser(usuario)
+        setIsAuthenticated(true)
+        return true
+      }
+      
+      // Fallback a demo si falla el backend
+      if (usuario === DEMO_USUARIO && codigo === DEMO_CODIGO) {
+        const mockToken = `demo-token-${Date.now()}`
+        
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('comercial_token', mockToken)
+          sessionStorage.setItem('comercial_user', usuario)
+          sessionStorage.setItem('comercial_user_data', JSON.stringify({
+            usuario,
+            nombre: 'Comercial Demo',
+            email: 'comercial@demo.com',
+          }))
+        }
+
+        setToken(mockToken)
+        setUser(usuario)
+        setIsAuthenticated(true)
+        return true
+      }
+      
+      return false
+    } catch (error) {
+      console.error('Error en login:', error)
+      
+      // Fallback a demo en caso de error
+      if (usuario === DEMO_USUARIO && codigo === DEMO_CODIGO) {
+        const mockToken = `demo-token-${Date.now()}`
+        
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('comercial_token', mockToken)
+          sessionStorage.setItem('comercial_user', usuario)
+          sessionStorage.setItem('comercial_user_data', JSON.stringify({
+            usuario,
+            nombre: 'Comercial Demo',
+            email: 'comercial@demo.com',
+          }))
+        }
+
+        setToken(mockToken)
+        setUser(usuario)
+        setIsAuthenticated(true)
+        return true
+      }
+      
+      return false
     }
-    return false
   }
 
   const logout = () => {

@@ -68,7 +68,11 @@ const Step6RiskCentral = ({ formData, onNext }: Props) => {
   }
 
   const handleContinue = () => {
-    onNext({})
+    onNext({
+      riskStatus: riskData?.status === 'APTO' ? 'aprobado' : 'rechazado',
+      riskScore: riskData?.score || 0,
+      riskDetails: riskData?.details || {},
+    })
   }
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { CreacionFormData } from '../CreacionModule/CreacionModule'
+import { uploadMultipleFiles } from '../../../../services/uploadFile'
 
 interface Props {
   formData: CreacionFormData
@@ -15,6 +16,7 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
     ultimosRecibos: null,
   })
   const [error, setError] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
 
   const requirements = [
     {
@@ -61,7 +63,7 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const missingFiles = requirements
@@ -74,9 +76,31 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
     }
 
     setError('')
-    onNext({
-      requirements: Object.values(uploadedFiles).filter((f) => f !== null) as File[],
-    })
+    setIsUploading(true)
+
+    try {
+      // Preparar archivos para subir
+      const filesToUpload = Object.entries(uploadedFiles)
+        .filter(([, file]) => file !== null)
+        .map(([key, file]) => ({
+          file: file!,
+          documentType: key,
+        }))
+
+      // Subir archivos al servidor
+      const uploadedDocuments = await uploadMultipleFiles(filesToUpload)
+      
+      console.log('Documentos subidos exitosamente:', uploadedDocuments)
+
+      // Pasar los documentos subidos al siguiente paso
+      onNext({
+        documents: uploadedDocuments,
+      })
+    } catch (err: any) {
+      console.error('Error subiendo archivos:', err)
+      setError(err.message || 'Error al subir los archivos. Por favor intenta nuevamente.')
+      setIsUploading(false)
+    }
   }
 
   return (
@@ -176,9 +200,17 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
       <div className='flex gap-4 pt-4'>
         <button
           type='submit'
-          className='flex-1 bg-gradient-to-r from-primary-color to-accent-color text-white font-semibold py-3 rounded-lg hover:shadow-lg transition-all duration-300'
+          disabled={isUploading}
+          className='flex-1 bg-gradient-to-r from-primary-color to-accent-color text-white font-semibold py-3 rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
         >
-          Continuar →
+          {isUploading ? (
+            <>
+              <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
+              Subiendo archivos...
+            </>
+          ) : (
+            'Continuar →'
+          )}
         </button>
       </div>
     </form>
