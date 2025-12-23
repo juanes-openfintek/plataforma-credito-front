@@ -95,6 +95,9 @@ const AdminDetailEmploy = ({
    * An array of objects representing personal information fields for a new employee profile.
    * @type {PersonalInfoField[]}
    */
+  // Detectar si el rol es comercial
+  const isCommercialRole = formik.values.role === 'commercial'
+
   const personalInfo = [
     {
       value: formik.values.completeName,
@@ -108,15 +111,21 @@ const AdminDetailEmploy = ({
       errors: formik.errors.email,
       type: 'text',
       readonly: !!userData,
-      label: 'Correo asignado*',
+      label: isCommercialRole ? 'Usuario asignado*' : 'Correo asignado*',
       name: 'email',
+      placeholder: isCommercialRole ? 'Ej: comercial1' : 'correo@ejemplo.com',
     },
     {
       value: formik.values.asignPassword,
       errors: formik.errors.asignPassword,
       type: 'text',
-      label: 'Clave asignada*',
+      inputMode: isCommercialRole ? 'numeric' : undefined,
+      pattern: isCommercialRole ? '[0-9]*' : undefined,
+      label: isCommercialRole ? 'Código asignado (mín. 8 dígitos)*' : 'Clave asignada*',
       name: 'asignPassword',
+      placeholder: isCommercialRole ? '12345678' : '••••••••',
+      minLength: isCommercialRole ? 8 : undefined,
+      maxLength: isCommercialRole ? 20 : undefined,
     },
     {
       value: formik.values.role,
@@ -125,8 +134,10 @@ const AdminDetailEmploy = ({
       options: [
         { text: '-- Seleccione una opción --', value: '' },
         { text: 'Usuario', value: 'user' },
-        { text: 'Aprobador', value: 'approver' },
-        { text: 'Desembolsador', value: 'disburser' },
+        { text: 'Comercial', value: 'commercial' },
+        { text: 'Analista 1', value: 'analyst1' },
+        { text: 'Analista 2', value: 'analyst2' },
+        { text: 'Analista 3', value: 'analyst3' },
         { text: 'Administrador', value: 'admin' },
       ],
       label: 'Rol*',

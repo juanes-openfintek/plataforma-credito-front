@@ -25,22 +25,44 @@ const Step9DetailedForms = ({ formData, onNext }: Props) => {
   const [laborInfo, setLaborInfo] = useState({
     company: '',
     position: '',
-    sector: '',
-    experience: '',
+    admissionDate: '',
     contractType: '',
   })
 
   const [financialDetail, setFinancialDetail] = useState({
-    savingsAccounts: 0,
-    otherIncome: 0,
-    currentDebts: 0,
-    monthlyObligations: 0,
+    accountNumber: '',
+    accountType: '',
+    bank: '',
   })
 
   const tabs = [
-    { id: 'basica', label: 'Información Básica', icon: '👤' },
-    { id: 'laboral', label: 'Información Laboral', icon: '💼' },
-    { id: 'financiera', label: 'Información Financiera', icon: '💰' },
+    { 
+      id: 'basica', 
+      label: 'Información Básica', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'laboral', 
+      label: 'Información Laboral', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'financiera', 
+      label: 'Información Financiera', 
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
+    },
   ]
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -223,28 +245,16 @@ const Step9DetailedForms = ({ formData, onNext }: Props) => {
               </div>
 
               <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>Sector</label>
+                <label className='block text-sm font-semibold text-gray-700 mb-2'>Fecha de Ingreso</label>
                 <input
-                  type='text'
-                  value={laborInfo.sector}
-                  onChange={(e) => setLaborInfo({ ...laborInfo, sector: e.target.value })}
-                  placeholder='Ej: Financiero, Tecnología'
+                  type='date'
+                  value={laborInfo.admissionDate}
+                  onChange={(e) => setLaborInfo({ ...laborInfo, admissionDate: e.target.value })}
                   className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
                 />
               </div>
 
               <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>Experiencia (años)</label>
-                <input
-                  type='number'
-                  value={laborInfo.experience}
-                  onChange={(e) => setLaborInfo({ ...laborInfo, experience: e.target.value })}
-                  placeholder='5'
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-                />
-              </div>
-
-              <div className='md:col-span-2'>
                 <label className='block text-sm font-semibold text-gray-700 mb-2'>Tipo de Contrato</label>
                 <select
                   value={laborInfo.contractType}
@@ -252,10 +262,9 @@ const Step9DetailedForms = ({ formData, onNext }: Props) => {
                   className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
                 >
                   <option value=''>-- Selecciona una opción --</option>
-                  <option value='indefinido'>Indefinido</option>
-                  <option value='fijo'>Fijo</option>
-                  <option value='temporal'>Temporal</option>
-                  <option value='practicas'>Prácticas</option>
+                  <option value='carrera-administrativa'>Carrera Administrativa</option>
+                  <option value='provisional-vacante-definitiva'>Provisional Vacante Definitiva</option>
+                  <option value='provisionalidad'>Provisionalidad</option>
                 </select>
               </div>
             </div>
@@ -265,53 +274,63 @@ const Step9DetailedForms = ({ formData, onNext }: Props) => {
         {/* Información Financiera */}
         {activeTab === 'financiera' && (
           <div className='space-y-4'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>
-                  Ahorros / Cuentas (COP)
-                </label>
-                <input
-                  type='number'
-                  value={financialDetail.savingsAccounts}
-                  onChange={(e) => setFinancialDetail({ ...financialDetail, savingsAccounts: parseFloat(e.target.value) || 0 })}
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-                />
-              </div>
+            {/* Información Bancaria */}
+            <div>
+              <h4 className='text-lg font-semibold text-gray-800 mb-4'>Información Bancaria</h4>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-semibold text-gray-700 mb-2'>Banco</label>
+                  <select
+                    value={financialDetail.bank}
+                    onChange={(e) => setFinancialDetail({ ...financialDetail, bank: e.target.value })}
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
+                  >
+                    <option value=''>-- Selecciona un banco --</option>
+                    <option value='bancolombia'>Bancolombia</option>
+                    <option value='banco-de-bogota'>Banco de Bogotá</option>
+                    <option value='davivienda'>Davivienda</option>
+                    <option value='bbva'>BBVA Colombia</option>
+                    <option value='av-villas'>Banco AV Villas</option>
+                    <option value='banco-popular'>Banco Popular</option>
+                    <option value='itau'>Itaú</option>
+                    <option value='occidente'>Banco de Occidente</option>
+                    <option value='bancoomeva'>Bancoomeva</option>
+                    <option value='colpatria'>Scotiabank Colpatria</option>
+                    <option value='agrario'>Banco Agrario</option>
+                    <option value='pichincha'>Banco Pichincha</option>
+                    <option value='caja-social'>Banco Caja Social</option>
+                    <option value='gnb-sudameris'>GNB Sudameris</option>
+                    <option value='banco-cooperativo-coopcentral'>Banco Cooperativo Coopcentral</option>
+                    <option value='banco-serfinanza'>Banco Serfinanza</option>
+                    <option value='nequi'>Nequi</option>
+                    <option value='daviplata'>Daviplata</option>
+                    <option value='movii'>Movii</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>
-                  Otros Ingresos (COP)
-                </label>
-                <input
-                  type='number'
-                  value={financialDetail.otherIncome}
-                  onChange={(e) => setFinancialDetail({ ...financialDetail, otherIncome: parseFloat(e.target.value) || 0 })}
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-                />
-              </div>
+                <div>
+                  <label className='block text-sm font-semibold text-gray-700 mb-2'>Tipo de Cuenta</label>
+                  <select
+                    value={financialDetail.accountType}
+                    onChange={(e) => setFinancialDetail({ ...financialDetail, accountType: e.target.value })}
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
+                  >
+                    <option value=''>-- Selecciona tipo de cuenta --</option>
+                    <option value='ahorros'>Ahorros</option>
+                    <option value='corriente'>Corriente</option>
+                  </select>
+                </div>
 
-              <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>
-                  Deudas Actuales (COP)
-                </label>
-                <input
-                  type='number'
-                  value={financialDetail.currentDebts}
-                  onChange={(e) => setFinancialDetail({ ...financialDetail, currentDebts: parseFloat(e.target.value) || 0 })}
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-semibold text-gray-700 mb-2'>
-                  Obligaciones Mensuales (COP)
-                </label>
-                <input
-                  type='number'
-                  value={financialDetail.monthlyObligations}
-                  onChange={(e) => setFinancialDetail({ ...financialDetail, monthlyObligations: parseFloat(e.target.value) || 0 })}
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-                />
+                <div className='md:col-span-2'>
+                  <label className='block text-sm font-semibold text-gray-700 mb-2'>Número de Cuenta</label>
+                  <input
+                    type='text'
+                    value={financialDetail.accountNumber}
+                    onChange={(e) => setFinancialDetail({ ...financialDetail, accountNumber: e.target.value })}
+                    placeholder='Ej: 1234567890'
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
+                  />
+                </div>
               </div>
             </div>
           </div>

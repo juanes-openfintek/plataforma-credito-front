@@ -15,6 +15,11 @@ const SimulationStep1 = ({ formData, onNext, onChange }: Props) => {
     { value: 'invalidez', label: 'Invalidez' },
     { value: 'otra', label: 'Otra' },
   ]
+  const activityLabels: Record<string, string> = {
+    pensionado: 'Pensionado',
+    empleado: 'Empleado',
+    independiente: 'Independiente',
+  }
 
   const handleContinue = () => {
     if (formData.activityType === 'pensionado' && !formData.pensionType) {
@@ -63,24 +68,12 @@ const SimulationStep1 = ({ formData, onNext, onChange }: Props) => {
       </div>
 
       {/* Tipo de actividad */}
-      <div>
-        <label className='block text-sm font-semibold text-gray-700 mb-3'>
-          Tipo de Actividad
-        </label>
-        <select
-          value={formData.activityType}
-          onChange={(e) => {
-            onChange({ activityType: e.target.value })
-            if (e.target.value !== 'pensionado') {
-              onChange({ pensionType: undefined })
-            }
-          }}
-          className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-        >
-          <option value='pensionado'>Pensionado</option>
-          <option value='empleado'>Empleado</option>
-          <option value='independiente'>Independiente</option>
-        </select>
+      <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+        <p className='text-xs uppercase text-gray-500 font-semibold tracking-wide'>Tipo de actividad registrado</p>
+        <p className='text-lg font-bold text-gray-800'>
+          {activityLabels[formData.activityType] || 'No especificado'}
+        </p>
+        <p className='text-sm text-gray-500'>Definido previamente en datos basicos del cliente</p>
       </div>
 
       {/* Tipo de pensión (solo si es pensionado) */}

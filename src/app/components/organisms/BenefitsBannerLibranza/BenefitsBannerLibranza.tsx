@@ -17,11 +17,11 @@ const BenefitsBannerLibranza = () => {
             <div className='relative'>
               <div className='absolute -top-8 -left-8 bg-white rounded-full px-6 py-3 shadow-xl z-10 hover:scale-105 transition-transform'>
                 <NextImage
-                  src='/images/openfintek-logo.png'
-                  alt='OpenFintek logo'
-                  width={120}
-                  height={40}
-                  className='object-contain max-h-10'
+                  src='/images/letras_openfintek.png'
+                  alt='OpenFintek'
+                  width={130}
+                  height={45}
+                  className='object-contain max-h-11'
                 />
               </div>
               <NextImage

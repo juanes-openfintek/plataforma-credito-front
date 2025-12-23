@@ -8,39 +8,18 @@ interface Props {
   onNext: (data: Partial<CreacionFormData>) => void
 }
 
+type FinishAction = 'finish' | 'finishAndSubmit'
+
 const Step8Requirements = ({ formData, onNext }: Props) => {
-  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File | null }>({
-    cedula: null,
-    certificadoIngresos: null,
-    libreta: null,
-    ultimosRecibos: null,
-  })
+  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File | null }>({})
   const [error, setError] = useState('')
   const [isUploading, setIsUploading] = useState(false)
 
   const requirements = [
     {
-      key: 'cedula',
-      label: 'Cédula de Ciudadanía (Ambos Lados)',
-      description: 'Documento de identidad en formato PDF',
-      required: true,
-    },
-    {
-      key: 'certificadoIngresos',
-      label: 'Certificado de Ingresos / Certificado Laboral',
-      description: 'Expedido por la empresa o entidad pagadora en PDF',
-      required: true,
-    },
-    {
-      key: 'libreta',
-      label: 'Libreta de Pensión o Nómina',
-      description: 'Últimas 2 páginas en PDF',
-      required: true,
-    },
-    {
-      key: 'ultimosRecibos',
-      label: 'Últimos 2 Recibos de Pago',
-      description: 'Comprobantes de ingreso en PDF',
+      key: 'certificadosSaldo',
+      label: 'Certificados de saldo (compra de cartera)',
+      description: 'Certificados vigentes de las deudas a comprar (PDF, max 5MB)',
       required: true,
     },
   ]
@@ -52,7 +31,7 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
     }
 
     if (file && file.size > 5 * 1024 * 1024) {
-      setError('El archivo no puede pesar más de 5 MB')
+      setError('El archivo no puede pesar mas de 5 MB')
       return
     }
 
@@ -63,9 +42,7 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+  const handleSubmit = async (action: FinishAction) => {
     const missingFiles = requirements
       .filter((req) => req.required && !uploadedFiles[req.key])
       .map((req) => req.label)
@@ -79,7 +56,6 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
     setIsUploading(true)
 
     try {
-      // Preparar archivos para subir
       const filesToUpload = Object.entries(uploadedFiles)
         .filter(([, file]) => file !== null)
         .map(([key, file]) => ({
@@ -87,15 +63,9 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
           documentType: key,
         }))
 
-      // Subir archivos al servidor
       const uploadedDocuments = await uploadMultipleFiles(filesToUpload)
-      
-      console.log('Documentos subidos exitosamente:', uploadedDocuments)
-
-      // Pasar los documentos subidos al siguiente paso
-      onNext({
-        documents: uploadedDocuments,
-      })
+      const merged = [...(formData.documents || []), ...uploadedDocuments]
+      onNext({ documents: merged, action })
     } catch (err: any) {
       console.error('Error subiendo archivos:', err)
       setError(err.message || 'Error al subir los archivos. Por favor intenta nuevamente.')
@@ -104,10 +74,10 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className='space-y-6'>
+    <form className='space-y-6'>
       <div>
         <h3 className='text-2xl font-bold text-gray-800 mb-4'>Documentos Requeridos</h3>
-        <p className='text-gray-600 mb-6'>Adjunta los documentos en formato PDF (máximo 5 MB cada uno)</p>
+        <p className='text-gray-600 mb-6'>Adjunta los documentos en formato PDF (maximo 5 MB cada uno)</p>
       </div>
 
       {error && (
@@ -116,7 +86,6 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
         </div>
       )}
 
-      {/* Documents Upload List */}
       <div className='space-y-4'>
         {requirements.map((req) => (
           <div key={req.key} className='border-2 border-gray-200 rounded-lg p-4 hover:border-primary-color transition-colors'>
@@ -130,7 +99,6 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
 
                 {uploadedFiles[req.key] ? (
                   <div className='flex items-center gap-2 bg-green-50 border border-green-200 rounded p-3'>
-                    <span className='text-green-600 text-xl'>✓</span>
                     <div className='flex-1'>
                       <p className='text-sm font-semibold text-green-800'>{uploadedFiles[req.key]?.name}</p>
                       <p className='text-xs text-green-600'>
@@ -147,10 +115,9 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
                   </div>
                 ) : (
                   <label className='flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-primary-color hover:bg-blue-50 cursor-pointer transition-all'>
-                    <span className='text-2xl'>📄</span>
                     <div className='text-center'>
                       <p className='font-semibold text-gray-700'>Click para cargar PDF</p>
-                      <p className='text-sm text-gray-600'>o arrastra el archivo aquí</p>
+                      <p className='text-sm text-gray-600'>o arrastra el archivo aqui</p>
                     </div>
                     <input
                       type='file'
@@ -166,7 +133,6 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
         ))}
       </div>
 
-      {/* Upload Progress */}
       {Object.values(uploadedFiles).filter((f) => f !== null).length > 0 && (
         <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
           <h4 className='font-semibold text-green-900 mb-2'>Documentos cargados</h4>
@@ -184,32 +150,39 @@ const Step8Requirements = ({ formData, onNext }: Props) => {
         </div>
       )}
 
-      {/* Info */}
       <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
         <h4 className='font-semibold text-blue-900 mb-2'>Instrucciones importantes</h4>
         <ul className='text-sm text-blue-800 space-y-1 list-disc list-inside'>
           <li>Solo se aceptan archivos en formato PDF</li>
-          <li>Tamaño máximo por archivo: 5 MB</li>
-          <li>Asegúrate que los documentos sean claros y legibles</li>
+          <li>Tamano maximo por archivo: 5 MB</li>
+          <li>Asegurate que los documentos sean claros y legibles</li>
           <li>Los documentos de identidad deben incluir ambos lados</li>
           <li>Todos los campos son obligatorios</li>
         </ul>
       </div>
 
-      {/* Action Buttons */}
-      <div className='flex gap-4 pt-4'>
+      <div className='flex flex-col md:flex-row gap-4 pt-4'>
         <button
-          type='submit'
+          type='button'
           disabled={isUploading}
+          onClick={() => handleSubmit('finish')}
+          className='flex-1 bg-gray-100 text-gray-800 font-semibold py-3 rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-gray-200'
+        >
+          {isUploading ? 'Procesando...' : 'Finalizar'}
+        </button>
+        <button
+          type='button'
+          disabled={isUploading}
+          onClick={() => handleSubmit('finishAndSubmit')}
           className='flex-1 bg-gradient-to-r from-primary-color to-accent-color text-white font-semibold py-3 rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
         >
           {isUploading ? (
             <>
               <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
-              Subiendo archivos...
+              Subiendo y radicando...
             </>
           ) : (
-            'Continuar →'
+            'Finalizar y radicar'
           )}
         </button>
       </div>

@@ -7,11 +7,24 @@ const redirectionByRole = (roles: string[]) => {
   if (roles.includes('admin')) {
     return '/admin'
   }
+  // Nuevos roles de analistas
+  if (roles.includes('analyst1')) {
+    return '/analista1/creditos'
+  }
+  if (roles.includes('analyst2')) {
+    return '/analista2/creditos'
+  }
+  if (roles.includes('analyst3')) {
+    return '/analista3/creditos'
+  }
+  // Roles legacy (mantener para compatibilidad mapeando al nuevo flujo)
   if (roles.includes('approver')) {
-    return '/aprobador'
+    // Aprobar -> flujo de analista inicial por defecto
+    return '/analista1/creditos'
   }
   if (roles.includes('disburser')) {
-    return '/desembolsador'
+    // Desembolsador ahora estǭ cubierto por analista 3
+    return '/analista3/creditos'
   }
   if (roles.includes('user')) {
     return '/usuario'

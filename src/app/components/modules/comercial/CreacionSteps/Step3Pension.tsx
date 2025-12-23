@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { CreacionFormData } from '../CreacionModule/CreacionModule'
+import ClientDocumentReminder from '../../../atoms/ClientDocumentReminder/ClientDocumentReminder'
 
 interface Props {
   formData: CreacionFormData
@@ -49,8 +50,9 @@ const Step3Pension = ({ formData, onNext }: Props) => {
       <div>
         <h3 className='text-2xl font-bold text-gray-800 mb-4'>Información de Pensión / Nómina</h3>
         <p className='text-gray-600 mb-6'>
-          Selecciona la administradora de pensiones y el tipo de pensión del cliente
+          Selecciona la administradora de pensiones y el tipo de pension del cliente con la informacion soportada en su documento.
         </p>
+        <ClientDocumentReminder className='mb-6' message='Cruza estos datos con el desprendible o resolucion del cliente.' />
       </div>
 
       {error && (
@@ -101,24 +103,6 @@ const Step3Pension = ({ formData, onNext }: Props) => {
         <p className='text-gray-500 text-sm mt-1'>
           Tipo de ingreso o pensión del cliente
         </p>
-      </div>
-
-      {/* Info Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mt-8'>
-        <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
-          <h4 className='font-semibold text-blue-900 mb-2'>¿Qué es una Administradora de Pensiones?</h4>
-          <p className='text-sm text-blue-800'>
-            Son instituciones autorizadas que administran los recursos para pensiones y jubilación. Incluyen Colpensiones
-            y las Administradoras de Fondos de Pensiones (AFP).
-          </p>
-        </div>
-
-        <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
-          <h4 className='font-semibold text-green-900 mb-2'>Crédito por Libranza</h4>
-          <p className='text-sm text-green-800'>
-            El crédito se descuenta automáticamente de la pensión o nómina del cliente, asegurando pagos puntuales.
-          </p>
-        </div>
       </div>
 
       {/* Summary */}

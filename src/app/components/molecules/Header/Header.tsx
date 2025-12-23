@@ -30,11 +30,11 @@ const Header = () => {
       <header className='flex fixed justify-between items-center bg-white py-4 px-20 max-lg:px-4 max-lg:justify-between w-screen shadow-lg font-semibold text-base z-50 transition-all duration-300'>
         <Link href='/' className='flex items-center hover:opacity-80 transition-opacity'>
           <NextImage
-            src='/images/openfintek-logo.png'
-            alt='OpenFintek logo'
-            width={120}
-            height={30}
-            className='object-contain max-h-8'
+            src='/images/letras_openfintek.png'
+            alt='OpenFintek'
+            width={140}
+            height={35}
+            className='object-contain max-h-10'
           />
         </Link>
         <button

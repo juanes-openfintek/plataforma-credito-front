@@ -15,10 +15,6 @@ export const CommercialLoginForm = () => {
     codigo: '',
   })
 
-  // Credenciales demo
-  const DEMO_USUARIO = 'comercial'
-  const DEMO_CODIGO = '123456'
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -91,17 +87,6 @@ export const CommercialLoginForm = () => {
           {loading ? 'Accediendo...' : 'Acceder al Portal'}
         </button>
       </form>
-
-      {/* Demo credentials info */}
-      <div className='mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
-        <p className='text-xs font-semibold text-blue-900 mb-2'>🔐 Credenciales Demo:</p>
-        <p className='text-xs text-blue-800'>
-          <span className='font-semibold'>Usuario:</span> {DEMO_USUARIO}
-        </p>
-        <p className='text-xs text-blue-800'>
-          <span className='font-semibold'>Código:</span> {DEMO_CODIGO}
-        </p>
-      </div>
 
       <p className='text-center text-gray-600 mt-6 text-sm'>
         <Link href='/login' className='text-primary-color font-semibold hover:underline'>

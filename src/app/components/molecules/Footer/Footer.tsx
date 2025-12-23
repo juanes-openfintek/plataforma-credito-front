@@ -11,11 +11,11 @@ const Footer = () => {
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12'>
           <div className='flex flex-col space-y-6'>
             <NextImage
-              src='/images/openfintek-logo.png'
-              alt='OpenFintek logo'
-              className='w-40 h-auto filter brightness-0 invert object-contain max-h-12'
-              width={160}
-              height={40}
+              src='/images/letras_openfintek.png'
+              alt='OpenFintek'
+              className='w-44 h-auto filter brightness-0 invert object-contain max-h-14'
+              width={180}
+              height={50}
             />
             <p className='text-white/80 text-sm leading-relaxed max-w-xs'>
               Creditos digitales rapidos, seguros y transparentes para impulsar negocios, colaboradores e independientes.

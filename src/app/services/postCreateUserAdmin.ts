@@ -25,10 +25,11 @@ const postCreateUserAdmin = async (values: {
     return response.data
   } catch (error: any) {
     console.error('Error fetching data:', error)
+    console.error('Error response:', error.response?.data)
     if (error?.response?.status === 401) {
       signOut()
     }
-    return error.response.data
+    return error.response?.data || { error: 'Error desconocido' }
   }
 }
 

@@ -80,11 +80,11 @@ const MenuUser = () => {
       )}{' '}
       <div className='flex fixed justify-between items-center bg-white py-2 px-20 max-lg:px-0 max-lg:justify-center w-screen shadow-md font-semibold text-base z-20 lg:hidden'>
         <NextImage
-          src='/images/openfintek-logo.png'
-          alt='OpenFintek logo'
-          width={100}
-          height={30}
-          className='object-contain max-h-8'
+          src='/images/letras_openfintek.png'
+          alt='OpenFintek'
+          width={110}
+          height={35}
+          className='object-contain max-h-9'
         />
         <span className='icon-bars-solid text-[1.125rem] absolute right-5 lg:hidden' onClick={() => setIsMenuOpen(!isMenuOpen)} />
       </div>
@@ -95,10 +95,10 @@ const MenuUser = () => {
       >
         <NextImage
           className='mx-auto object-contain max-h-12'
-          src='/images/openfintek-logo.png'
-          alt='OpenFintek logo'
-          width={140}
-          height={45}
+          src='/images/letras_openfintek.png'
+          alt='OpenFintek'
+          width={150}
+          height={50}
         />
         <nav
           className={`flex flex-col ${

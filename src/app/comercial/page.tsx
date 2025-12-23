@@ -6,9 +6,11 @@ import CommercialLayout from '../components/layouts/CommercialLayout/CommercialL
 import ControlModule from '../components/modules/comercial/ControlModule/ControlModule'
 import CreacionModule from '../components/modules/comercial/CreacionModule/CreacionModule'
 import DashboardModule from '../components/modules/comercial/DashboardModule/DashboardModule'
+import RadicadosModule from '../components/modules/comercial/RadicadosModule/RadicadosModule'
+import QuickCalculatorModule from '../components/modules/comercial/QuickCalculatorModule/QuickCalculatorModule'
 
 function CommercialPortalContent() {
-  const [activeModule, setActiveModule] = useState<'dashboard' | 'control' | 'creacion'>('dashboard')
+  const [activeModule, setActiveModule] = useState<'dashboard' | 'control' | 'creacion' | 'radicados' | 'calculadora'>('dashboard')
   const { isAuthenticated, loading } = useCommercialAuth()
   const router = useRouter()
 
@@ -34,6 +36,10 @@ function CommercialPortalContent() {
       {activeModule === 'dashboard' && <DashboardModule />}
       {activeModule === 'control' && <ControlModule />}
       {activeModule === 'creacion' && <CreacionModule />}
+      {activeModule === 'radicados' && <RadicadosModule />}
+      {activeModule === 'calculadora' && (
+        <QuickCalculatorModule onContinue={() => setActiveModule('creacion')} />
+      )}
     </CommercialLayout>
   )
 }

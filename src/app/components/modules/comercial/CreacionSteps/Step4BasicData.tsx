@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { CreacionFormData } from '../CreacionModule/CreacionModule'
+import ClientDocumentReminder from '../../../atoms/ClientDocumentReminder/ClientDocumentReminder'
 
 interface Props {
   formData: CreacionFormData
@@ -42,7 +43,8 @@ const Step4BasicData = ({ formData, onNext }: Props) => {
     <form onSubmit={handleSubmit} className='space-y-6'>
       <div>
         <h3 className='text-2xl font-bold text-gray-800 mb-4'>Datos Básicos del Cliente</h3>
-        <p className='text-gray-600 mb-6'>Completa la información personal del cliente</p>
+        <p className='text-gray-600 mb-3'>Completa la informacion personal del cliente con lo que aparece en su documento oficial.</p>
+        <ClientDocumentReminder className='mb-6' message='Cada vez que solicites datos del cliente haz referencia a su documento para mantener coherencia.' />
       </div>
 
       {error && (

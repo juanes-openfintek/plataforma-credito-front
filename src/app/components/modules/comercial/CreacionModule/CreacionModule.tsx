@@ -1,55 +1,28 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Step1Identification from '../CreacionSteps/Step1Identification'
 import Step2OTP from '../CreacionSteps/Step2OTP'
-import Step3Pension from '../CreacionSteps/Step3Pension'
-import Step4BasicData from '../CreacionSteps/Step4BasicData'
-// Step5FinancialInfo removed - data collected in simulator
+import Step3FullProfile from '../CreacionSteps/Step3FullProfile'
 import Step6RiskCentral from '../CreacionSteps/Step6RiskCentral'
 import Step7Simulator from '../CreacionSteps/Step7Simulator'
 import Step8Requirements from '../CreacionSteps/Step8Requirements'
-import Step9DetailedForms from '../CreacionSteps/Step9DetailedForms'
-import { createCliente, updateCliente } from '../../../../services/commercialClientes'
+import { createCliente, updateCliente, submitClienteAsCredit } from '../../../../services/commercialClientes'
 import { useRouter } from 'next/navigation'
 
 export interface CreacionFormData {
-  // Step 1
   identificationType?: string
   identificationNumber?: string
   phone?: string
-  // Step 2
   otp?: string
   otpVerified?: boolean
-  // Step 3
+  personType?: 'pensionado' | 'empleado'
   pensionIssuer?: string
   pensionType?: string
-  // Step 4
   firstName?: string
   lastName?: string
   birthDate?: string
   email?: string
   gender?: string
-  // Step 5
-  monthlyIncome?: number
-  monthlyExpenses?: number
-  creditExperience?: string
-  // Step 6
-  riskStatus?: string
-  riskScore?: number
-  riskDetails?: any
-  // Step 7
-  creditAmount?: number
-  creditTerm?: number
-  monthlyPayment?: number
-  totalInterest?: number
-  totalToPay?: number
-  simulationId?: string
-  // Step 8
-  requirements?: File[]
-  documents?: any[]
-  // Step 9
-  healthStatus?: string
-  disability?: string
   idIssuancePlace?: string
   idIssuanceDate?: string
   birthPlace?: string
@@ -58,6 +31,36 @@ export interface CreacionFormData {
   maritalStatus?: string
   laborInfo?: any
   financialDetails?: any
+  monthlyIncome?: number
+  monthlyExpenses?: number
+  creditExperience?: string
+  riskStatus?: string
+  riskScore?: number
+  riskDetails?: any
+  creditAmount?: number
+  creditTerm?: number
+  monthlyPayment?: number
+  totalInterest?: number
+  totalToPay?: number
+  simulationId?: string
+  requiresPortfolioPurchase?: boolean
+  portfolioDebts?: Array<{
+    id: string
+    entity: string
+    balance: number
+    installment: number
+    lineOfCredit: string
+    obligationNumber: string
+    status: string
+    rating: string
+    selected?: boolean
+  }>
+  maxQuota?: number
+  maxAmount?: number
+  desiredQuota?: number
+  action?: 'finish' | 'finishAndSubmit'
+  requirements?: File[]
+  documents?: any[]
 }
 
 const CreacionModule = () => {
@@ -67,64 +70,59 @@ const CreacionModule = () => {
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const totalSteps = 6
 
-  const totalSteps = 8 // Reduced from 9 (removed Step5 Financial Info)
+  useEffect(() => {
+    const draft = typeof window !== 'undefined' ? window.localStorage.getItem('calculatorDraft') : null
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft)
+        setFormData((prev) => ({ ...prev, ...parsed }))
+      } catch (e) {
+        console.warn('No se pudo leer el borrador de calculadora', e)
+      }
+      window.localStorage.removeItem('calculatorDraft')
+    }
+  }, [])
 
   const handleNextStep = async (newData: Partial<CreacionFormData>) => {
+    const action = newData.action as 'finish' | 'finishAndSubmit' | undefined
     const updatedFormData = { ...formData, ...newData }
+    delete (updatedFormData as any).action
     setFormData(updatedFormData)
     setError(null)
     setIsLoading(true)
 
     try {
-      // Step 1: Crear cliente con información básica
+      // Nuevo orden de pasos:
+      // 1. Identificación (+ personType)
+      // 2. OTP
+      // 3. Centrales de Riesgo
+      // 4. Simulador
+      // 5. Perfil y Formularios
+      // 6. Requerimientos
+
       if (currentStep === 1 && !clienteId) {
-        const clienteData = {
+        // Paso 1: Crear cliente con identificación y tipo de persona
+        const createdCliente = await createCliente({
           identificationType: updatedFormData.identificationType,
           identificationNumber: updatedFormData.identificationNumber,
           phone: updatedFormData.phone,
-        }
-        const createdCliente = await createCliente(clienteData)
+          personType: updatedFormData.personType,
+        })
         setClienteId(createdCliente._id)
-        console.log('Cliente creado:', createdCliente._id)
-      }
-      // Step 2: Actualizar con verificación OTP
-      else if (currentStep === 2 && clienteId) {
-        await updateCliente(clienteId, {
-          otpVerified: true,
-        })
-        console.log('OTP verificado')
-      }
-      // Step 3: Actualizar con datos de pensión
-      else if (currentStep === 3 && clienteId) {
-        await updateCliente(clienteId, {
-          pensionIssuer: updatedFormData.pensionIssuer,
-          pensionType: updatedFormData.pensionType,
-        })
-        console.log('Datos de pensión guardados')
-      }
-      // Step 4: Actualizar con datos básicos
-      else if (currentStep === 4 && clienteId) {
-        await updateCliente(clienteId, {
-          firstName: updatedFormData.firstName,
-          lastName: updatedFormData.lastName,
-          birthDate: updatedFormData.birthDate,
-          email: updatedFormData.email,
-          gender: updatedFormData.gender,
-        })
-        console.log('Datos básicos guardados')
-      }
-      // Step 5 (RiskCentral): Actualizar con datos de riesgo
-      else if (currentStep === 5 && clienteId) {
+      } else if (currentStep === 2 && clienteId) {
+        // Paso 2: Verificación OTP
+        await updateCliente(clienteId, { otpVerified: true })
+      } else if (currentStep === 3 && clienteId) {
+        // Paso 3: Centrales de Riesgo
         await updateCliente(clienteId, {
           riskStatus: updatedFormData.riskStatus || 'pendiente',
           riskScore: updatedFormData.riskScore,
           riskDetails: updatedFormData.riskDetails,
         })
-        console.log('Datos de riesgo guardados')
-      }
-      // Step 6 (Simulator): Actualizar con datos de simulación
-      else if (currentStep === 6 && clienteId) {
+      } else if (currentStep === 4 && clienteId) {
+        // Paso 4: Simulador
         await updateCliente(clienteId, {
           creditAmount: updatedFormData.creditAmount,
           creditTerm: updatedFormData.creditTerm,
@@ -133,40 +131,45 @@ const CreacionModule = () => {
           totalToPay: updatedFormData.totalToPay,
           monthlyIncome: updatedFormData.monthlyIncome,
           monthlyExpenses: updatedFormData.monthlyExpenses,
+          maxQuota: updatedFormData.maxQuota,
+          maxAmount: updatedFormData.maxAmount,
+          desiredQuota: updatedFormData.desiredQuota,
+          requiresPortfolioPurchase: updatedFormData.requiresPortfolioPurchase,
+          portfolioDebts: updatedFormData.portfolioDebts,
         })
-        console.log('Simulación guardada')
-      }
-      // Step 7 (Requirements): Actualizar con documentos subidos
-      else if (currentStep === 7 && clienteId) {
+      } else if (currentStep === 5 && clienteId) {
+        // Paso 5: Perfil y Formularios
         await updateCliente(clienteId, {
-          documents: updatedFormData.documents || [],
-        })
-        console.log('Documentos guardados')
-      }
-      // Step 8 (DetailedForms): Actualizar con formularios detallados y finalizar
-      else if (currentStep === 8 && clienteId) {
-        await updateCliente(clienteId, {
-          healthStatus: updatedFormData.healthStatus,
-          disability: updatedFormData.disability,
+          laborInfo: updatedFormData.laborInfo,
+          firstName: updatedFormData.firstName,
+          lastName: updatedFormData.lastName,
+          birthDate: updatedFormData.birthDate,
+          email: updatedFormData.email,
+          gender: updatedFormData.gender,
           idIssuancePlace: updatedFormData.idIssuancePlace,
           idIssuanceDate: updatedFormData.idIssuanceDate,
           birthPlace: updatedFormData.birthPlace,
           birthCountry: updatedFormData.birthCountry,
-          educationLevel: updatedFormData.educationLevel,
-          maritalStatus: updatedFormData.maritalStatus,
-          laborInfo: updatedFormData.laborInfo,
           financialDetails: updatedFormData.financialDetails,
-          status: 'completado', // Marcar como completado
+          pensionIssuer: updatedFormData.pensionIssuer,
         })
-        console.log('Formularios detallados guardados - Cliente completado')
-        
-        // Mostrar mensaje de éxito y redirigir
-        alert('¡Crédito radicado exitosamente! 🎉')
-        router.push('/comercial') // Redirigir al dashboard
+      } else if (currentStep === 6 && clienteId) {
+        // Paso 6: Requerimientos (final)
+        await updateCliente(clienteId, {
+          documents: updatedFormData.documents || [],
+          status: 'completado',
+          notes: 'Cliente completado por comercial. Pendiente de revisión por Analista 1.',
+        })
+        if (action === 'finishAndSubmit') {
+          await submitClienteAsCredit(clienteId)
+          alert('Crédito radicado y enviado al Analista 1 para revisión.')
+        } else {
+          alert('Crédito guardado como completado. Puedes radicarlo cuando quieras.')
+        }
+        router.push('/comercial')
         return
       }
 
-      // Avanzar al siguiente paso
       if (currentStep < totalSteps) {
         setCurrentStep(currentStep + 1)
       }
@@ -179,15 +182,11 @@ const CreacionModule = () => {
   }
 
   const handlePreviousStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
+    if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
   const handleStepChange = (step: number) => {
-    if (!isLoading) {
-      setCurrentStep(step)
-    }
+    if (!isLoading) setCurrentStep(step)
   }
 
   const getStepComponent = () => {
@@ -197,17 +196,13 @@ const CreacionModule = () => {
       case 2:
         return <Step2OTP formData={formData} onNext={handleNextStep} />
       case 3:
-        return <Step3Pension formData={formData} onNext={handleNextStep} />
-      case 4:
-        return <Step4BasicData formData={formData} onNext={handleNextStep} />
-      case 5:
         return <Step6RiskCentral formData={formData} onNext={handleNextStep} />
-      case 6:
+      case 4:
         return <Step7Simulator formData={formData} onNext={handleNextStep} />
-      case 7:
+      case 5:
+        return <Step3FullProfile formData={formData} onNext={handleNextStep} />
+      case 6:
         return <Step8Requirements formData={formData} onNext={handleNextStep} />
-      case 8:
-        return <Step9DetailedForms formData={formData} onNext={handleNextStep} />
       default:
         return null
     }
@@ -216,31 +211,27 @@ const CreacionModule = () => {
   const stepLabels = [
     'Identificación',
     'Verificación OTP',
-    'Datos Pensión',
-    'Datos Básicos',
     'Centrales Riesgo',
     'Simulador',
+    'Perfil y formularios',
     'Requerimientos',
-    'Formularios',
   ]
 
   return (
     <div className='space-y-8'>
-      {/* Header */}
       <div className='mb-6'>
         <h2 className='text-4xl font-bold text-gray-900 mb-2'>Nuevo Crédito</h2>
         <p className='text-gray-600'>Completa el formulario paso a paso</p>
         {clienteId && (
           <p className='text-sm text-green-600 mt-2'>
-            ✓ Cliente ID: {clienteId.substring(0, 8)}...
+            Cliente ID: {clienteId.substring(0, 8)}...
           </p>
         )}
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className='bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-xl flex items-start gap-3'>
-          <span className='text-xl'>⚠️</span>
+          <span className='text-xl'>!</span>
           <div className='flex-1'>
             <p className='font-semibold'>Error</p>
             <p className='text-sm'>{error}</p>
@@ -249,12 +240,11 @@ const CreacionModule = () => {
             onClick={() => setError(null)}
             className='text-red-600 hover:text-red-800 font-bold'
           >
-            ✕
+            x
           </button>
         </div>
       )}
 
-      {/* Loading Overlay */}
       {isLoading && (
         <div className='bg-blue-50 border border-blue-300 text-blue-800 px-4 py-3 rounded-xl flex items-center gap-3'>
           <div className='w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'></div>
@@ -262,15 +252,12 @@ const CreacionModule = () => {
         </div>
       )}
 
-      {/* Progress Bar */}
       <div className='bg-white rounded-2xl shadow-md p-6 border border-purple-100'>
-        {/* Progress Steps */}
         <div className='flex items-center justify-between mb-6 overflow-x-auto pb-4'>
           {stepLabels.map((label, index) => {
             const step = index + 1
             const isCompleted = step < currentStep
             const isActive = step === currentStep
-
             return (
               <div key={step} className='flex items-center flex-shrink-0'>
                 <button
@@ -311,7 +298,6 @@ const CreacionModule = () => {
           })}
         </div>
 
-        {/* Progress Percentage */}
         <div className='w-full bg-gray-200 rounded-full h-2.5'>
           <div
             className='bg-gradient-to-r from-purple-600 to-purple-400 h-2.5 rounded-full transition-all duration-300'
@@ -323,12 +309,10 @@ const CreacionModule = () => {
         </p>
       </div>
 
-      {/* Step Content */}
       <div className='bg-white rounded-2xl shadow-md p-8 border border-gray-100'>
         {getStepComponent()}
       </div>
 
-      {/* Navigation Buttons */}
       <div className='flex gap-4 justify-between items-center'>
         <button
           onClick={handlePreviousStep}
@@ -351,7 +335,6 @@ const CreacionModule = () => {
           </div>
         </div>
 
-        {/* Los botones de siguiente se manejan en los componentes de cada paso */}
         <div className='w-32'></div>
       </div>
     </div>

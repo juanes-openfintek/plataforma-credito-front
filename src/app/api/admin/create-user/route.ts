@@ -31,6 +31,52 @@ export async function POST(req: NextRequest) {
       lastname = splitName[1]
       break
   }
+
+  // Detectar si es un usuario comercial
+  const isCommercialRole = decryptedData?.values.role === 'commercial'
+
+  // Si es comercial, usar el endpoint específico de comerciales
+  if (isCommercialRole) {
+    const usuario = decryptedData?.values.email;
+    const payload = {
+      usuario: usuario, // El campo "email" contiene el usuario
+      codigo: decryptedData?.values.asignPassword, // El código numérico
+      companyName: decryptedData?.values?.completeName || 'Empresa Demo',
+      registrationNumber: decryptedData?.values.identificationNumber || '000000000',
+      taxId: decryptedData?.values.identificationNumber || '000000000',
+      businessPhone: '3000000000', // Valor por defecto
+      companyEmail: `${usuario}@feelpay.com`, // Email generado automáticamente
+      legalRepresentativeName: decryptedData?.values?.completeName || 'Representante',
+      legalRepresentativeDocument: decryptedData?.values.identificationNumber,
+    }
+
+    console.log('Creating commercial user with payload:', payload)
+
+    return axios
+      .post(
+        process.env.NEXT_PUBLIC_BACKEND_URL + '/admin/commercial-users',
+        payload,
+        {
+          headers: {
+            'x-security-token': process.env.NEXT_PUBLIC_SECURITY_TOKEN,
+            Authorization: `Bearer ${decryptedData?.token}`,
+          },
+        }
+      )
+      .then((res: any) => {
+        return NextResponse.json({ message: 'Usuario comercial creado exitosamente' }, {
+          status: res.status,
+        })
+      })
+      .catch((err: any) => {
+        console.error('Backend error creating commercial:', err.response?.data)
+        return NextResponse.json(err.response?.data || { message: 'Error al crear usuario comercial' }, {
+          status: err.response?.status || 500,
+        })
+      })
+  }
+
+  // Para otros roles, usar el endpoint estándar
   return axios
     .post(
       process.env.NEXT_PUBLIC_BACKEND_URL + '/auth/create-user',

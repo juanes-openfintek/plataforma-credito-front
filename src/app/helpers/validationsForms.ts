@@ -631,7 +631,9 @@ export const validateEmployData = (
   isCreating: boolean
 ) => {
   const errors: any = {}
-  const contieneCaracterEspecial = values.asignPassword.match(
+  // Convertir a string por si acaso viene como number
+  const passwordString = String(values.asignPassword || '')
+  const contieneCaracterEspecial = passwordString.match(
     /[~`!@#$%^&*()_+={}|\[\];:",.<>/?]/
   )
   // Validate name
@@ -654,10 +656,27 @@ export const validateEmployData = (
   if (values.completeName.includes('  ')) {
     errors.completeName = 'Evite utilizar demásiados espacios en blanco'
   }
-  // Validate email
-  if (!EMAIL_REGEX.test(values.email)) {
-    errors.email = 'Debe ingresar un correo electrónico válido'
+  // Detectar si es rol comercial
+  const isCommercialRole = values.role === 'commercial'
+  
+  // Validate email (o usuario para comercial)
+  if (!isCommercialRole) {
+    if (!EMAIL_REGEX.test(values.email)) {
+      errors.email = 'Debe ingresar un correo electrónico válido'
+    }
+  } else {
+    // Para comercial, validar usuario (sin formato de email)
+    if (values.email.length < 3) {
+      errors.email = 'El usuario debe tener al menos 3 caracteres'
+    }
+    if (values.email.includes('@')) {
+      errors.email = 'El usuario no debe contener @'
+    }
+    if (WHITESPACE_REGEX.test(values.email)) {
+      errors.email = 'El usuario no debe contener espacios'
+    }
   }
+  
   // Validate role
   if (
     values.role === '-- Seleccione una opción --' ||
@@ -666,8 +685,28 @@ export const validateEmployData = (
   ) {
     errors.role = 'Este campo es obligatorio'
   }
+  
   // Validate asignPassword on Edit
-  if (!isCreating && values.asignPassword === '*****') {
+  if (!isCreating && passwordString === '*****') {
+    return errors
+  }
+  
+  // Validación especial para código de comercial
+  if (isCommercialRole) {
+    // Para comercial: solo números, mínimo 8 dígitos
+    if (!NUMBER_REGEX.test(passwordString)) {
+      errors.asignPassword = 'El código debe contener solo números'
+      return errors
+    }
+    if (passwordString.length < 8) {
+      errors.asignPassword = 'El código debe tener mínimo 8 dígitos'
+      return errors
+    }
+    if (passwordString.length > 20) {
+      errors.asignPassword = 'El código debe tener máximo 20 dígitos'
+      return errors
+    }
+    // Si es comercial, saltamos las validaciones de contraseña compleja
     return errors
   }
   // Validate identificationNumber
@@ -689,20 +728,20 @@ export const validateEmployData = (
     }
   }
   // Validate asignPassword
-  if (values.asignPassword.length < 8) {
+  if (passwordString.length < 8) {
     errors.asignPassword = 'Su contraseña debe tener al menos 8 caracteres'
     return errors
   }
-  if (!/[a-z]/.test(values.asignPassword)) {
+  if (!/[a-z]/.test(passwordString)) {
     errors.asignPassword = 'Su contraseña debe tener al menos una minúscula'
     return errors
   }
-  const contieneMayúscula = values.asignPassword.match(/[A-Z]/)
+  const contieneMayúscula = passwordString.match(/[A-Z]/)
   if (!contieneMayúscula) {
     errors.asignPassword = 'Su contraseña debe tener al menos una mayúscula'
     return errors
   }
-  const contieneNúmero = values.asignPassword.match(/[0-9]/)
+  const contieneNúmero = passwordString.match(/[0-9]/)
   if (!contieneNúmero) {
     errors.asignPassword = 'Su contraseña debe tener al menos un número'
     return errors
@@ -712,11 +751,11 @@ export const validateEmployData = (
       'Su contraseña debe tener al menos un carácter especial'
     return errors
   }
-  if (WHITESPACE_REGEX.test(values.asignPassword)) {
+  if (WHITESPACE_REGEX.test(passwordString)) {
     errors.asignPassword = 'Evite colocar espacios en blanco en su contraseña'
     return errors
   }
-  if (values.asignPassword.length > 50) {
+  if (passwordString.length > 50) {
     errors.asignPassword = 'Evite colocar más de 50 caracteres en su contraseña'
     return errors
   }

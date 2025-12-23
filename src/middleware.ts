@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Solo verificar autenticación para rutas protegidas específicas
-  const protectedPaths = ['/usuario', '/admin', '/aprobador', '/desembolsador']
+  const protectedPaths = ['/usuario', '/admin', '/analista1', '/analista2', '/analista3']
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
   
   if (!isProtectedPath) {
@@ -59,22 +59,35 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
+    const roles: string[] = userData?.roles || []
+    const hasRole = (role: string, legacyFallback?: string[]) => {
+      return (
+        roles.includes(role) ||
+        (legacyFallback || []).some((legacy) => roles.includes(legacy))
+      )
+    }
+
     // Validar rol según la ruta
-    if (pathname.startsWith('/usuario') && !userData?.roles?.includes('user')) {
+    if (pathname.startsWith('/usuario') && !hasRole('user')) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    if (pathname.startsWith('/admin') && !userData?.roles?.includes('admin')) {
+    if (pathname.startsWith('/admin') && !hasRole('admin')) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    if (pathname.startsWith('/aprobador') && !userData?.roles?.includes('approver')) {
+    if (pathname.startsWith('/analista1') && !hasRole('analyst1', ['approver'])) {
       return NextResponse.redirect(new URL('/', request.url))
     }
 
-    if (pathname.startsWith('/desembolsador') && !userData?.roles?.includes('disburser')) {
+    if (pathname.startsWith('/analista2') && !hasRole('analyst2', ['approver'])) {
       return NextResponse.redirect(new URL('/', request.url))
     }
+
+    if (pathname.startsWith('/analista3') && !hasRole('analyst3', ['approver', 'disburser'])) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+
     return NextResponse.next()
   } catch (error) {
     return NextResponse.redirect(new URL('/login', request.url))
@@ -85,7 +98,8 @@ export const config = {
   matcher: [
     '/usuario/:path*',
     '/admin/:path*',
-    '/aprobador/:path*',
-    '/desembolsador/:path*',
+    '/analista1/:path*',
+    '/analista2/:path*',
+    '/analista3/:path*',
   ],
 }

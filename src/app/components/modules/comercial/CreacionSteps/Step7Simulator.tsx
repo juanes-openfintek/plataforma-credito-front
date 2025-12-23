@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CreacionFormData } from '../CreacionModule/CreacionModule'
 import { calculateSimulation as calculateSimulationAPI, saveSimulation } from '../../../../services/commercialSimulation'
 
@@ -13,37 +13,101 @@ interface SimulationData {
   requiresPortfolioPurchase: boolean
   activityType: string
   pensionType?: string
+  portfolioDebts?: Array<{
+    id: string
+    entity: string
+    balance: number
+    installment: number
+    lineOfCredit: string
+    obligationNumber: string
+    status: string
+    rating: string
+    selected?: boolean
+  }>
   
   // Producto y corretaje
   brokeragePercentage: number
   
-  // Ingresos y descuentos
+  // Ingresos y capacidad
   monthlyIncome: number
-  monthlyDeductions: Array<{ amount: number; description: string }>
-  
-  // Modo de simulación
-  simulationMode: 'by-amount' | 'by-quota'
-  desiredAmount?: number
-  desiredQuota?: number
-  desiredTerm?: number
+  monthlyExpenseAuto: number
+  maxQuota: number
+  maxAmount: number
+
+  // Selección editable
+  desiredAmount: number
+  desiredQuota: number
+  desiredTerm: number
 }
 
 const Step7Simulator = ({ formData, onNext }: Props) => {
+  const randomObligation = () => `${Math.floor(100000 + Math.random() * 900000)}`
+
+  const portfolioSeed = [
+    {
+      id: 'deuda-1',
+      entity: 'Banco de Occidente',
+      balance: 4500,
+      installment: 210,
+      lineOfCredit: 'VEH',
+      obligationNumber: randomObligation(),
+      status: 'Vigente',
+      rating: 'A',
+      selected: true,
+    },
+    {
+      id: 'deuda-2',
+      entity: 'Banco Popular',
+      balance: 2800,
+      installment: 150,
+      lineOfCredit: 'LIB',
+      obligationNumber: randomObligation(),
+      status: 'Vencida',
+      rating: 'B',
+      selected: false,
+    },
+    {
+      id: 'deuda-3',
+      entity: 'Banco de Bogotá',
+      balance: 1800,
+      installment: 120,
+      lineOfCredit: 'TDC',
+      obligationNumber: randomObligation(),
+      status: 'Saldada',
+      rating: 'C',
+      selected: false,
+    },
+  ]
+
+  // Determinar tipo de actividad basado en personType seleccionado en identificación
+  const getActivityType = () => {
+    if (formData.personType === 'empleado') return 'empleado'
+    return 'pensionado' // Default para pensionados o si no está definido
+  }
+
   const [subStep, setSubStep] = useState(1)
   const [simulationData, setSimulationData] = useState<SimulationData>({
-    requiresPortfolioPurchase: false,
-    activityType: formData.pensionType ? 'pensionado' : 'empleado',
+    requiresPortfolioPurchase: formData.requiresPortfolioPurchase || false,
+    activityType: getActivityType(),
     pensionType: formData.pensionType,
     brokeragePercentage: 0,
     monthlyIncome: formData.monthlyIncome || 0,
-    monthlyDeductions: [],
-    simulationMode: 'by-amount',
-    desiredAmount: formData.creditAmount,
-    desiredTerm: formData.creditTerm,
+    monthlyExpenseAuto: Math.round((formData.monthlyIncome || 0) * 0.08),
+    maxQuota: Math.round(((formData.monthlyIncome || 0) - (formData.monthlyIncome || 0) * 0.08) / 2) || 0,
+    maxAmount: 0,
+    desiredAmount: formData.creditAmount || 0,
+    desiredQuota: formData.monthlyPayment || 0,
+    desiredTerm: formData.creditTerm || 144,
+    portfolioDebts: portfolioSeed,
   })
   const [simulationResult, setSimulationResult] = useState<any>(null)
-  const [newDeduction, setNewDeduction] = useState({ amount: '', description: '' })
   const [showAmortizationTable, setShowAmortizationTable] = useState(false)
+  const [lastEdit, setLastEdit] = useState<'amount' | 'quota' | 'auto'>('auto')
+  const activityLabels: Record<string, string> = {
+    pensionado: 'Pensionado',
+    empleado: 'Empleado',
+    independiente: 'Independiente',
+  }
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('es-CO', {
@@ -80,52 +144,38 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
   }
 
   const calculateSimulation = () => {
-    // Tasas
-    const annualRate = 0.18 // 18% anual (EA)
-    const monthlyRate = Math.pow(1 + annualRate, 1/12) - 1 // Tasa efectiva mensual
-    const insuranceRate = 0.006 // 0.6% mensual sobre saldo
-    // administrationFee removed as requested
-    
-    const amount = simulationData.desiredAmount || 5000000
     const term = simulationData.desiredTerm || 12
-    
-    // Aplicar corretaje al inicio
+    const fpm = factorByMonths[term] || factorByMonths[144]
+
+    // Determinar monto/cuota según última edición
+    let amount = simulationData.desiredAmount || 0
+    if (lastEdit === 'quota') {
+      amount = simulationData.desiredQuota ? (simulationData.desiredQuota * 1_000_000) / fpm : 0
+    }
+    const derivedQuota = fpm ? (amount / 1_000_000) * fpm : 0
+
+    // Tasas demo para la tabla (referencial)
+    const annualRate = 0.18
+    const monthlyRate = Math.pow(1 + annualRate, 1/12) - 1
+    const insuranceRate = 0.006
+
     const brokerageAmount = (amount * simulationData.brokeragePercentage) / 100
     const deliverableAmount = amount - brokerageAmount
-    
-    // Calcular tabla de amortización
-    const { monthlyPayment: basePayment, amortizationTable } = calculateFrenchAmortization(amount, monthlyRate, term)
-    
-    // Calcular seguros y administración sobre el plan
-    const totalInsurance = amortizationTable.reduce((sum, row) => {
-      const insurance = row.balance * insuranceRate
-      return sum + insurance
-    }, 0)
-    
-    // Calcular totales
+
+    const { amortizationTable } = calculateFrenchAmortization(amount, monthlyRate, term)
+
+    const totalInsurance = amortizationTable.reduce((sum, row) => sum + row.balance * insuranceRate, 0)
     const totalInterest = amortizationTable.reduce((sum, row) => sum + row.interestPayment, 0)
-    const totalPrincipal = amount
     const iva = totalInsurance * 0.19
-    
-    // Cuota mensual total (incluye seguro)
-    const insuranceMonthly = (totalInsurance / term)
-    const monthlyPaymentWithExtras = basePayment + insuranceMonthly
-    
     const totalCost = totalInterest + totalInsurance + iva + brokerageAmount
     const totalToPay = amount + totalCost
-    
-    // Verificar capacidad de pago
-    const totalDeductions = simulationData.monthlyDeductions.reduce((sum, d) => sum + d.amount, 0)
-    const availableIncome = simulationData.monthlyIncome - totalDeductions
-    const maxQuota = availableIncome * 0.5 // Máximo 50% del ingreso disponible
-    
-    // Agregar columnas adicionales a la tabla de amortización
+
     const enhancedAmortizationTable = amortizationTable.map((row) => ({
       ...row,
       insurance: row.balance * insuranceRate,
-      totalPayment: row.monthlyPayment + (row.balance * insuranceRate),
+      totalPayment: row.monthlyPayment + row.balance * insuranceRate,
     }))
-    
+
     setSimulationResult({
       totalAmount: amount,
       deliverableAmount,
@@ -134,82 +184,109 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
       insurance: totalInsurance,
       iva,
       totalCost,
-      monthlyPayment: monthlyPaymentWithExtras,
-      basePayment,
+      monthlyPayment: derivedQuota,
+      basePayment: derivedQuota,
       term,
-      availableIncome,
-      maxQuota,
-      isAffordable: monthlyPaymentWithExtras <= maxQuota,
+      availableIncome: simulationData.monthlyIncome - simulationData.monthlyExpenseAuto,
+      maxQuota: simulationData.maxQuota,
+      isAffordable: derivedQuota <= simulationData.maxQuota,
       amortizationTable: enhancedAmortizationTable,
       totalToPay,
     })
-    
+
     setSubStep(4) // Ir a resultados
   }
 
   const handleFinalSubmit = async () => {
-    try {
-      // Guardar la simulación en el backend (opcional)
-      // Esto ayuda a tener un registro de las simulaciones realizadas
-      if (simulationResult) {
-        const simulationToSave = {
-          ...simulationData,
-          clientName: `${formData.firstName} ${formData.lastName}`,
-          clientDocument: formData.identificationNumber,
-        }
-        
-        // Opcional: guardar la simulación en el backend
-        // const savedSimulation = await saveSimulation(simulationToSave)
-        // console.log('Simulación guardada:', savedSimulation)
+    // Solo intentamos guardar simulación en modo demo; si falla, continuamos igual
+    const isDemoMode = (() => {
+      if (typeof window === 'undefined') return false
+      const token = sessionStorage.getItem('comercial_token')
+      return token?.startsWith('demo-token-') ?? false
+    })()
+
+    if (simulationResult && isDemoMode) {
+      const simulationToSave = {
+        requiresPortfolioPurchase: simulationData.requiresPortfolioPurchase,
+        activityType: simulationData.activityType,
+        pensionType: simulationData.pensionType,
+        monthlyIncome: simulationData.monthlyIncome,
+        monthlyExpenseAuto: simulationData.monthlyExpenseAuto,
+        desiredAmount: simulationData.desiredAmount,
+        desiredQuota: simulationData.desiredQuota,
+        desiredTerm: simulationData.desiredTerm,
+        brokeragePercentage: simulationData.brokeragePercentage,
+        clientName: `${formData.firstName} ${formData.lastName}`,
+        clientDocument: formData.identificationNumber,
       }
-      
-      // Pasar los datos al siguiente paso
-      onNext({
-        creditAmount: simulationResult?.deliverableAmount || simulationData.desiredAmount,
-        creditTerm: simulationResult?.term || simulationData.desiredTerm,
-        monthlyPayment: simulationResult?.monthlyPayment,
-        totalInterest: simulationResult?.interest,
-        totalToPay: simulationResult?.totalToPay,
-        monthlyIncome: simulationData.monthlyIncome,
-        monthlyExpenses: simulationData.monthlyDeductions.reduce((sum, d) => sum + d.amount, 0),
-      })
-    } catch (error) {
-      console.error('Error al procesar simulación:', error)
-      // Continuar de todas formas
-      onNext({
-        creditAmount: simulationResult?.deliverableAmount || simulationData.desiredAmount,
-        creditTerm: simulationResult?.term || simulationData.desiredTerm,
-        monthlyIncome: simulationData.monthlyIncome,
-        monthlyExpenses: simulationData.monthlyDeductions.reduce((sum, d) => sum + d.amount, 0),
-      })
-    }
-  }
 
-  const addDeduction = () => {
-    if (newDeduction.amount && newDeduction.description) {
-      setSimulationData({
-        ...simulationData,
-        monthlyDeductions: [
-          ...simulationData.monthlyDeductions,
-          {
-            amount: parseFloat(newDeduction.amount),
-            description: newDeduction.description,
-          },
-        ],
-      })
-      setNewDeduction({ amount: '', description: '' })
+      try {
+        await saveSimulation(simulationToSave)
+      } catch {
+        // ignorar en demo
+      }
     }
-  }
 
-  const removeDeduction = (index: number) => {
-    setSimulationData({
-      ...simulationData,
-      monthlyDeductions: simulationData.monthlyDeductions.filter((_, i) => i !== index),
+    // Pasar los datos al siguiente paso
+    onNext({
+      creditAmount: simulationResult?.deliverableAmount || simulationData.desiredAmount,
+      creditTerm: simulationResult?.term || simulationData.desiredTerm,
+      monthlyPayment: simulationResult?.monthlyPayment,
+      totalInterest: simulationResult?.interest,
+      totalToPay: simulationResult?.totalToPay,
+      monthlyIncome: simulationData.monthlyIncome,
+      monthlyExpenses: simulationData.monthlyExpenseAuto,
+      maxQuota: simulationData.maxQuota,
+      maxAmount: simulationData.maxAmount,
+      desiredQuota: simulationData.desiredQuota,
+      requiresPortfolioPurchase: simulationData.requiresPortfolioPurchase,
+      portfolioDebts: simulationData.portfolioDebts,
     })
   }
 
-  const totalDeductions = simulationData.monthlyDeductions.reduce((sum, d) => sum + d.amount, 0)
-  const availableIncome = simulationData.monthlyIncome - totalDeductions
+  // Factores por millón extendidos hasta 144 meses (valores demo decrecientes)
+  const factorByMonths: Record<number, number> = {
+    12: 94539,
+    24: 51122,
+    36: 36752,
+    48: 29643,
+    60: 25437,
+    72: 23000,
+    84: 21000,
+    96: 19500,
+    108: 18200,
+    120: 17000,
+    132: 16000,
+    144: 15000,
+  }
+
+  const recalcCapacity = (income: number, term: number) => {
+    const sanitizedIncome = income || 0
+    const expense = Math.round(sanitizedIncome * 0.08)
+    const quotaCap = Math.round((sanitizedIncome - expense) / 2)
+    const fpm = factorByMonths[term] || factorByMonths[144]
+    const maxAmount = fpm ? Math.round((quotaCap * 1_000_000) / fpm) : 0
+
+    setSimulationData((prev) => ({
+      ...prev,
+      monthlyIncome: sanitizedIncome,
+      monthlyExpenseAuto: expense,
+      maxQuota: quotaCap,
+      maxAmount,
+      desiredTerm: term,
+      desiredQuota: quotaCap,
+      desiredAmount: maxAmount,
+    }))
+    setLastEdit('auto')
+  }
+
+  useEffect(() => {
+    recalcCapacity(simulationData.monthlyIncome, simulationData.desiredTerm || 144)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const selectedPortfolioDebts = (simulationData.portfolioDebts || []).filter((d) => d.selected)
+  const totalPortfolioBalance = selectedPortfolioDebts.reduce((sum, d) => sum + d.balance, 0)
+  const totalPortfolioInstallment = selectedPortfolioDebts.reduce((sum, d) => sum + d.installment, 0)
 
   const pensionTypes = [
     { value: 'propia-vejez', label: 'Propia por Vejez' },
@@ -256,17 +333,12 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
         </div>
       </div>
 
-      <div>
-        <label className='block text-sm font-semibold text-gray-700 mb-3'>Tipo de Actividad</label>
-        <select
-          value={simulationData.activityType}
-          onChange={(e) => setSimulationData({ ...simulationData, activityType: e.target.value, pensionType: e.target.value !== 'pensionado' ? undefined : simulationData.pensionType })}
-          className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-        >
-          <option value='pensionado'>Pensionado</option>
-          <option value='empleado'>Empleado</option>
-          <option value='independiente'>Independiente</option>
-        </select>
+      <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+        <p className='text-xs uppercase text-gray-500 font-semibold tracking-wide'>Tipo de actividad registrado</p>
+        <p className='text-lg font-bold text-gray-800'>
+          {activityLabels[simulationData.activityType] || 'No especificado'}
+        </p>
+        <p className='text-sm text-gray-500'>Dato traido de los pasos anteriores del cliente</p>
       </div>
 
       {simulationData.activityType === 'pensionado' && (
@@ -292,6 +364,77 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
           ℹ️ Esta información nos ayuda a calcular las condiciones más adecuadas para tu crédito
         </p>
       </div>
+
+      {simulationData.requiresPortfolioPurchase && (
+          <div className='bg-white border border-gray-200 rounded-lg p-4 space-y-3'>
+            <h4 className='text-lg font-semibold text-gray-800'>Compra de Cartera</h4>
+            <p className='text-sm text-gray-600'>Selecciona las deudas que se comprarán y se sumarán al monto solicitado.</p>
+            <div className='overflow-x-auto border border-gray-200 rounded-lg'>
+              <table className='min-w-full text-sm'>
+                <thead className='bg-gray-100 text-gray-700'>
+                  <tr>
+                    <th className='px-3 py-2 text-left'>Seleccionar</th>
+                    <th className='px-3 py-2 text-left'>Entidad</th>
+                    <th className='px-3 py-2 text-left'>Línea de crédito</th>
+                    <th className='px-3 py-2 text-left'>No. Obligación</th>
+                    <th className='px-3 py-2 text-right'>Saldo</th>
+                    <th className='px-3 py-2 text-right'>Valor cuota</th>
+                    <th className='px-3 py-2 text-left'>Estado</th>
+                    <th className='px-3 py-2 text-left'>Calificación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {simulationData.portfolioDebts?.map((debt) => (
+                    <tr key={debt.id} className='border-t border-gray-200 hover:bg-gray-50 transition-colors'>
+                      <td className='px-3 py-3'>
+                        <input
+                          type='checkbox'
+                          checked={!!debt.selected}
+                          onChange={() =>
+                            setSimulationData({
+                              ...simulationData,
+                              portfolioDebts: simulationData.portfolioDebts?.map((d) =>
+                                d.id === debt.id ? { ...d, selected: !d.selected } : d
+                              ),
+                            })
+                          }
+                          className='h-4 w-4'
+                        />
+                      </td>
+                      <td className='px-3 py-3 font-semibold text-gray-800'>{debt.entity}</td>
+                      <td className='px-3 py-3 text-gray-700'>{debt.lineOfCredit}</td>
+                      <td className='px-3 py-3 text-gray-700'>{debt.obligationNumber}</td>
+                      <td className='px-3 py-3 text-right font-semibold text-gray-900'>
+                        {formatCurrency(debt.balance)}
+                      </td>
+                      <td className='px-3 py-3 text-right text-gray-800'>
+                        {formatCurrency(debt.installment)}
+                      </td>
+                      <td className='px-3 py-3'>
+                        <span className='inline-flex px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold'>
+                          {debt.status}
+                        </span>
+                      </td>
+                      <td className='px-3 py-3'>
+                        <span className='inline-flex px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold'>
+                          {debt.rating}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className='flex items-center justify-between text-sm text-gray-700'>
+              <span>Saldo a comprar seleccionado:</span>
+              <span className='font-semibold text-gray-900'>{formatCurrency(totalPortfolioBalance)}</span>
+            </div>
+            <div className='flex items-center justify-between text-sm text-gray-700'>
+              <span>Cuotas actuales de esas deudas:</span>
+              <span className='font-semibold text-gray-900'>{formatCurrency(totalPortfolioInstallment)}</span>
+            </div>
+          </div>
+        )}
 
       <button
         type='button'
@@ -354,12 +497,12 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
     </div>
   )
 
-  // SUB-PASO 3: Ingresos y Simulación
+  // SUB-PASO 3: Ingresos y Simulación (simplificado)
   const renderSubStep3 = () => (
     <div className='space-y-6'>
       <div>
         <h3 className='text-2xl font-bold text-gray-800 mb-2'>Simulación Avanzada</h3>
-        <p className='text-gray-600'>Paso 3 de 3: Ingresos y Parámetros</p>
+        <p className='text-gray-600'>Paso 3 de 3: Ingresos y capacidad</p>
       </div>
 
       <div>
@@ -371,7 +514,8 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
             value={simulationData.monthlyIncome ? simulationData.monthlyIncome.toLocaleString('es-CO') : ''}
             onChange={(e) => {
               const value = e.target.value.replace(/[^\d]/g, '')
-              setSimulationData({ ...simulationData, monthlyIncome: parseFloat(value) || 0 })
+              const incomeVal = parseFloat(value) || 0
+              recalcCapacity(incomeVal, simulationData.desiredTerm || 144)
             }}
             placeholder='3,000,000'
             className='w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
@@ -379,152 +523,102 @@ const Step7Simulator = ({ formData, onNext }: Props) => {
         </div>
       </div>
 
-      <div>
-        <label className='block text-sm font-semibold text-gray-700 mb-2'>Descuentos Mensuales</label>
-        
-        {simulationData.monthlyDeductions.length > 0 && (
-          <div className='space-y-2 mb-4'>
-            {simulationData.monthlyDeductions.map((deduction, index) => (
-              <div key={index} className='flex items-center justify-between bg-gray-50 p-3 rounded-lg'>
-                <div>
-                  <p className='font-semibold text-gray-800'>{deduction.description}</p>
-                  <p className='text-sm text-gray-600'>{formatCurrency(deduction.amount)}</p>
-                </div>
-                <button
-                  type='button'
-                  onClick={() => removeDeduction(index)}
-                  className='px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm'
-                >
-                  Eliminar
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+          <p className='text-sm text-gray-600 font-semibold mb-1'>Egresos automáticos (8%)</p>
+          <p className='text-2xl font-bold text-gray-800'>{formatCurrency(simulationData.monthlyExpenseAuto)}</p>
+          <p className='text-xs text-gray-500 mt-1'>Calculado automáticamente sobre tus ingresos</p>
+        </div>
+        <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
+          <p className='text-sm text-green-700 font-semibold mb-1'>Cuota máxima sugerida</p>
+          <p className='text-2xl font-bold text-green-700'>{formatCurrency(simulationData.maxQuota)}</p>
+        </div>
+      </div>
 
-        <div className='grid grid-cols-2 gap-3 mb-2'>
-          <input
-            type='text'
-            value={newDeduction.description}
-            onChange={(e) => setNewDeduction({ ...newDeduction, description: e.target.value })}
-            placeholder='Descripción'
-            className='px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-          />
-          <div className='relative'>
-            <span className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm'>$</span>
+      <div className='bg-white border border-gray-200 rounded-lg p-4 space-y-4'>
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Plazo (meses)</label>
+            <select
+              value={simulationData.desiredTerm}
+              onChange={(e) => {
+                const termVal = parseInt(e.target.value) || 144
+                recalcCapacity(simulationData.monthlyIncome, termVal)
+              }}
+              className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color bg-white'
+            >
+              {Object.keys(factorByMonths)
+                .map((m) => parseInt(m))
+                .sort((a, b) => a - b)
+                .map((months) => (
+                  <option key={months} value={months}>
+                    {months} meses
+                  </option>
+                ))}
+            </select>
+            <p className='text-xs text-gray-500 mt-1'>Por defecto 144 meses para máxima capacidad.</p>
+          </div>
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Cuota máxima (auto)</label>
             <input
               type='text'
-              value={newDeduction.amount ? parseFloat(newDeduction.amount).toLocaleString('es-CO') : ''}
-              onChange={(e) => {
-                const value = e.target.value.replace(/[^\d]/g, '')
-                setNewDeduction({ ...newDeduction, amount: value })
-              }}
-              placeholder='500,000'
-              className='w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
+              value={simulationData.maxQuota ? Math.round(simulationData.maxQuota).toLocaleString('es-CO') : ''}
+              readOnly
+              className='w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700'
+            />
+          </div>
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Monto máximo (auto)</label>
+            <input
+              type='text'
+              value={simulationData.maxAmount ? Math.round(simulationData.maxAmount).toLocaleString('es-CO') : ''}
+              readOnly
+              className='w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700'
             />
           </div>
         </div>
-        <button
-          type='button'
-          onClick={addDeduction}
-          className='w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold text-sm'
-        >
-          + Agregar Descuento
-        </button>
-      </div>
 
-      <div>
-        <label className='block text-sm font-semibold text-gray-700 mb-3'>Modo de Simulación</label>
-        <div className='grid grid-cols-2 gap-4 mb-4'>
-          <button
-            type='button'
-            onClick={() => setSimulationData({ ...simulationData, simulationMode: 'by-amount' })}
-            className={`px-6 py-4 rounded-lg border-2 font-semibold transition-all ${
-              simulationData.simulationMode === 'by-amount'
-                ? 'border-primary-color bg-primary-color text-white'
-                : 'border-gray-300 hover:border-primary-color'
-            }`}
-          >
-            Por Monto
-          </button>
-          <button
-            type='button'
-            onClick={() => setSimulationData({ ...simulationData, simulationMode: 'by-quota' })}
-            className={`px-6 py-4 rounded-lg border-2 font-semibold transition-all ${
-              simulationData.simulationMode === 'by-quota'
-                ? 'border-primary-color bg-primary-color text-white'
-                : 'border-gray-300 hover:border-primary-color'
-            }`}
-          >
-            Por Cuota
-          </button>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Cuota deseada (editable)</label>
+            <div className='relative'>
+              <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold'>$</span>
+              <input
+                type='text'
+                value={simulationData.desiredQuota ? Math.round(simulationData.desiredQuota).toLocaleString('es-CO') : ''}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^\d]/g, '')
+                  setSimulationData({ ...simulationData, desiredQuota: parseInt(value) || 0 })
+                  setLastEdit('quota')
+                }}
+                className='w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
+              />
+            </div>
+          </div>
+          <div>
+            <label className='block text-sm font-semibold text-gray-700 mb-2'>Monto deseado (editable)</label>
+            <div className='relative'>
+              <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold'>$</span>
+              <input
+                type='text'
+                value={simulationData.desiredAmount ? Math.round(simulationData.desiredAmount).toLocaleString('es-CO') : ''}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^\d]/g, '')
+                  setSimulationData({ ...simulationData, desiredAmount: parseInt(value) || 0 })
+                  setLastEdit('amount')
+                }}
+                className='w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
+              />
+            </div>
+          </div>
         </div>
 
-        {simulationData.simulationMode === 'by-amount' && (
-          <div className='space-y-4'>
-            <div>
-              <label className='block text-sm font-semibold text-gray-700 mb-2'>Monto Deseado</label>
-              <div className='relative'>
-                <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold'>$</span>
-                <input
-                  type='text'
-                  value={simulationData.desiredAmount ? simulationData.desiredAmount.toLocaleString('es-CO') : ''}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d]/g, '')
-                    setSimulationData({ ...simulationData, desiredAmount: parseFloat(value) || undefined })
-                  }}
-                  placeholder='10,000,000'
-                  className='w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-                />
-              </div>
-            </div>
-            <div>
-              <label className='block text-sm font-semibold text-gray-700 mb-2'>Plazo (meses)</label>
-              <input
-                type='number'
-                value={simulationData.desiredTerm || ''}
-                onChange={(e) => setSimulationData({ ...simulationData, desiredTerm: parseInt(e.target.value) || undefined })}
-                placeholder='Ej: 36'
-                min='6'
-                max='72'
-                className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-              />
-            </div>
-          </div>
-        )}
-
-        {simulationData.simulationMode === 'by-quota' && (
-          <div className='space-y-4'>
-            <div>
-              <label className='block text-sm font-semibold text-gray-700 mb-2'>Cuota Deseada</label>
-              <div className='relative'>
-                <span className='absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-semibold'>$</span>
-                <input
-                  type='text'
-                  value={simulationData.desiredQuota ? simulationData.desiredQuota.toLocaleString('es-CO') : ''}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d]/g, '')
-                    setSimulationData({ ...simulationData, desiredQuota: parseFloat(value) || undefined })
-                  }}
-                  placeholder='300,000'
-                  className='w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-                />
-              </div>
-            </div>
-            <div>
-              <label className='block text-sm font-semibold text-gray-700 mb-2'>Plazo (meses)</label>
-              <input
-                type='number'
-                value={simulationData.desiredTerm || ''}
-                onChange={(e) => setSimulationData({ ...simulationData, desiredTerm: parseInt(e.target.value) || undefined })}
-                placeholder='Ej: 36'
-                min='6'
-                max='72'
-                className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color'
-              />
-            </div>
-          </div>
-        )}
+        <div className='flex items-center justify-between text-sm text-gray-700'>
+          <span>Factor por millón para {simulationData.desiredTerm} meses:</span>
+          <span className='font-semibold text-gray-900'>
+            {formatCurrency(factorByMonths[simulationData.desiredTerm] || factorByMonths[144])}
+          </span>
+        </div>
       </div>
 
       <div className='flex gap-4'>

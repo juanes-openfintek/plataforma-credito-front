@@ -61,10 +61,10 @@ export const RegisterForm = () => {
       )}
       <form onSubmit={formikRegister.handleSubmit} className='flex flex-col'>
         <NextImage
-          src='/images/openfintek-logo.png'
-          alt='OpenFintek logo'
-          width={200}
-          height={60}
+          src='/images/letras_openfintek.png'
+          alt='OpenFintek'
+          width={220}
+          height={70}
           className='self-center mb-4 object-contain max-h-16'
         />
         <div className='my-10'>

@@ -1,6 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { CreacionFormData } from '../CreacionModule/CreacionModule'
+import ClientDocumentReminder from '../../../atoms/ClientDocumentReminder/ClientDocumentReminder'
 
 interface Props {
   formData: CreacionFormData
@@ -50,7 +51,8 @@ const Step5FinancialInfo = ({ formData, onNext }: Props) => {
     <form onSubmit={handleSubmit} className='space-y-6'>
       <div>
         <h3 className='text-2xl font-bold text-gray-800 mb-4'>Información Financiera</h3>
-        <p className='text-gray-600 mb-6'>Ingresa los detalles financieros del cliente</p>
+        <p className='text-gray-600 mb-3'>Ingresa los detalles financieros del cliente usando la informacion soportada en su documento y desprendibles.</p>
+        <ClientDocumentReminder className='mb-6' message='Siempre valida montos y certificaciones contra el documento del cliente.' />
       </div>
 
       {error && (

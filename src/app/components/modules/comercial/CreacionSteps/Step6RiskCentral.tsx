@@ -11,47 +11,89 @@ const Step6RiskCentral = ({ formData, onNext }: Props) => {
   const [isLoading, setIsLoading] = useState(true)
   const [riskData, setRiskData] = useState<any>(null)
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
+    setIsLoading(true)
+    const timeout = setTimeout(() => {
+      const monthlyIncome = formData.monthlyIncome || 0
+      const monthlyExpenses = formData.monthlyExpenses || 0
+      const availableIncome = Math.max(monthlyIncome - monthlyExpenses, 0)
+      const maxQuota = Math.max(availableIncome * 0.5, 0)
+      const currentQuotaUsage = 0.37
+
       const mockRiskData = {
-        name: `${formData.firstName} ${formData.lastName}`,
-        document: formData.identificationNumber,
+        name: 'Cliente consultado',
+        document: formData.identificationNumber || 'Sin documento',
         riskLevel: 'BAJO',
-        score: 750,
-        status: 'APTO',
-        activeDebts: 2,
-        totalDebt: 8500000,
+        score: 742,
+        status: 'VIABLE',
+        activeDebts: 3,
+        totalDebt: 12500000,
+        monthlyIncome,
+        monthlyExpenses,
         lastCheck: new Date().toLocaleDateString('es-CO'),
-        details: {
-          cajasCompensacion: {
-            status: 'SIN DEUDA',
-            amount: 0,
-          },
-          bancos: {
-            status: 'APTO',
-            amount: 3500000,
-            activeLoans: 1,
-          },
-          tarjetasCredito: {
-            status: 'APTO',
-            amount: 5000000,
-            activeCards: 2,
-          },
-          serviciosTecnicos: {
-            status: 'SIN DEUDA',
-            amount: 0,
-          },
-          datacrédito: {
-            morosidad: 'NO',
-            años: 8,
-            score: 750,
-          },
+        consultedEntities: ['DataCredito (Experian)', 'TransUnion', 'Listas restrictivas SAGRILAFT'],
+        summary: {
+          availableIncome,
+          maxQuota,
+          currentQuotaUsage,
+          recommendedQuota: Math.max(Math.round(maxQuota * (1 - currentQuotaUsage)), 0),
         },
+        detailSegments: [
+          {
+            id: 'bancos',
+            title: 'Sector financiero',
+            status: 'AL DIA',
+            amount: 4200000,
+            items: ['Credito libre inversion Bancolombia', 'Cuota $420.000 - plazo restante 18 meses'],
+          },
+          {
+            id: 'tarjetas',
+            title: 'Sector Solidario',
+            status: 'UTILIZACION 38%',
+            amount: 2800000,
+            items: ['2 tarjetas activas (Visa y MasterCard)', 'Pagos realizados antes del corte los ultimos 12 meses'],
+          },
+          {
+            id: 'microcreditos',
+            title: 'Sector Real',
+            status: 'CANCELADO',
+            amount: 0,
+            items: ['Ultimo microcredito cancelado en 2023', 'Sin obligaciones vigentes con fintech'],
+          },
+          {
+            id: 'servicios',
+            title: 'Telcos',
+            status: 'SIN REPORTE NEGATIVO',
+            amount: 0,
+            items: ['Pagos al dia con operadores moviles y energia', 'Sin suspensiones ni acuerdos activos'],
+          },
+        ],
+        paymentBehavior: {
+          monthsReported: 96,
+          enquiries90Days: 1,
+          lastEnquiry: 'OpenFintek demo - hace 12 dias',
+          maxDaysPastDue: 0,
+        },
+        alerts: [
+          { label: 'Consultas ultimos 90 dias', value: '1 (OpenFintek demo)' },
+          { label: 'Reportes negativos', value: 'Sin registros vigentes' },
+          { label: 'Listas restrictivas', value: 'No aparece' },
+        ],
       }
+
       setRiskData(mockRiskData)
       setIsLoading(false)
     }, 2000)
+
+    return () => clearTimeout(timeout)
   }, [formData])
 
   const getRiskColor = (level: string) => {
@@ -68,18 +110,19 @@ const Step6RiskCentral = ({ formData, onNext }: Props) => {
   }
 
   const handleContinue = () => {
+    const isViable = riskData?.status === 'VIABLE'
     onNext({
-      riskStatus: riskData?.status === 'APTO' ? 'aprobado' : 'rechazado',
+      riskStatus: isViable ? 'aprobado' : 'rechazado',
       riskScore: riskData?.score || 0,
-      riskDetails: riskData?.details || {},
+      riskDetails: riskData || {},
     })
   }
 
   return (
     <div className='space-y-6'>
       <div>
-        <h3 className='text-2xl font-bold text-gray-800 mb-4'>Verificación de Centrales de Riesgo</h3>
-        <p className='text-gray-600 mb-6'>Consultando datos de centrales de riesgo...</p>
+        <h3 className='text-2xl font-bold text-gray-800 mb-4'>Verificacion de Centrales de Riesgo</h3>
+        <p className='text-gray-600 mb-6'>Consultando datos de centrales de riesgo y listas restrictivas...</p>
       </div>
 
       {isLoading ? (
@@ -90,85 +133,107 @@ const Step6RiskCentral = ({ formData, onNext }: Props) => {
           <p className='text-gray-700 font-semibold mb-2'>Consultando centrales de riesgo...</p>
           <p className='text-gray-600 text-sm'>Por favor espera mientras verificamos el historial del cliente</p>
         </div>
-      ) : riskData && riskData.status === 'APTO' ? (
+      ) : riskData && riskData.status === 'VIABLE' ? (
         <>
-          {/* Risk Summary */}
-          <div className={`border-2 rounded-lg p-6 ${getRiskColor(riskData.riskLevel)}`}>
-            <div className='flex justify-between items-start'>
+          <div className={`border-2 rounded-lg p-6 space-y-4 ${getRiskColor(riskData.riskLevel)}`}>
+            <div className='flex flex-wrap gap-6 justify-between items-start'>
               <div>
-                <p className='font-semibold mb-1'>Nivel de Riesgo</p>
+                <p className='font-semibold mb-1'>Nivel de riesgo</p>
                 <p className='text-3xl font-bold'>{riskData.riskLevel}</p>
               </div>
               <div className='text-center'>
-                <p className='text-sm font-semibold mb-1'>Score de Riesgo</p>
+                <p className='text-sm font-semibold mb-1'>Score</p>
                 <p className='text-4xl font-bold'>{riskData.score}</p>
               </div>
               <div className='text-center'>
                 <p className='text-sm font-semibold mb-1'>Estado</p>
-                <p className='px-4 py-2 rounded-full bg-white font-bold'>✓ APTO</p>
+                <p className='px-4 py-2 rounded-full bg-white font-bold'>Viable</p>
+              </div>
+            </div>
+
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4 text-sm'>
+              <div>
+                <p className='font-semibold text-gray-700'>Cliente consultado</p>
+                <p className='text-gray-600'>{riskData.name}</p>
+                <p className='text-gray-500'>{riskData.document}</p>
+              </div>
+              <div>
+                <p className='font-semibold text-gray-700'>Fuentes consultadas</p>
+                <ul className='text-gray-600 list-disc list-inside'>
+                  {riskData.consultedEntities.map((entity: string) => (
+                    <li key={entity}>{entity}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className='font-semibold text-gray-700'>Capacidad estimada</p>
+                <p className='text-gray-600'>Ingreso libre: {formatCurrency(riskData.summary.availableIncome)}</p>
+                <p className='text-gray-600'>Cupo maximo sugerido: {formatCurrency(riskData.summary.maxQuota)}</p>
               </div>
             </div>
           </div>
 
-          {/* Risk Details Grid */}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
-              <h4 className='font-semibold text-gray-800 mb-3'>Cajas de Compensación</h4>
-              <p className='text-sm text-green-600 font-semibold'>Sin Deuda</p>
-              <p className='text-sm text-gray-600'>$0 COP</p>
-            </div>
+            {riskData.detailSegments.map((segment: any) => (
+              <div key={segment.id} className='bg-white border border-gray-200 rounded-lg p-5'>
+                <div className='flex items-center justify-between'>
+                  <h4 className='font-semibold text-gray-800'>{segment.title}</h4>
+                  <span className='text-xs font-bold text-primary-color'>{segment.status}</span>
+                </div>
+                <p className='text-sm text-gray-600 mt-2'>Saldo reportado: {formatCurrency(segment.amount)}</p>
+                <ul className='mt-3 text-xs text-gray-500 space-y-1 list-disc list-inside'>
+                  {segment.items.map((item: string) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
 
-            <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
-              <h4 className='font-semibold text-gray-800 mb-3'>Bancos</h4>
-              <p className='text-sm text-blue-600 font-semibold'>Apto</p>
-              <p className='text-sm text-gray-600'>${riskData.details.bancos.amount.toLocaleString('es-CO')} COP</p>
-              <p className='text-xs text-gray-500 mt-1'>{riskData.details.bancos.activeLoans} crédito(s) activo(s)</p>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='bg-white border border-gray-200 rounded-lg p-5'>
+              <h4 className='font-semibold text-gray-800 mb-3'>Comportamiento de pago</h4>
+              <ul className='text-sm text-gray-600 space-y-1'>
+                <li>Meses reportados: {riskData.paymentBehavior.monthsReported}</li>
+                <li>Consultas ultimos 90 dias: {riskData.paymentBehavior.enquiries90Days}</li>
+                <li>Ultima consulta: {riskData.paymentBehavior.lastEnquiry}</li>
+                <li>Maximo de dias en mora: {riskData.paymentBehavior.maxDaysPastDue}</li>
+              </ul>
             </div>
-
-            <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
-              <h4 className='font-semibold text-gray-800 mb-3'>Tarjetas de Crédito</h4>
-              <p className='text-sm text-blue-600 font-semibold'>Apto</p>
-              <p className='text-sm text-gray-600'>${riskData.details.tarjetasCredito.amount.toLocaleString('es-CO')} COP</p>
-              <p className='text-xs text-gray-500 mt-1'>{riskData.details.tarjetasCredito.activeCards} tarjeta(s) activa(s)</p>
-            </div>
-
-            <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
-              <h4 className='font-semibold text-gray-800 mb-3'>DataCrédito</h4>
-              <p className='text-sm text-green-600 font-semibold'>Sin Morosidad</p>
-              <p className='text-sm text-gray-600'>Score: {riskData.details.datacrédito.score}</p>
-              <p className='text-xs text-gray-500 mt-1'>{riskData.details.datacrédito.años} años de historial</p>
+            <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-5'>
+              <h4 className='font-semibold text-yellow-900 mb-3'>Alertas y monitoreo</h4>
+              <ul className='text-sm text-yellow-800 space-y-1'>
+                {riskData.alerts.map((alert: any) => (
+                  <li key={alert.label}>
+                    <span className='font-semibold'>{alert.label}:</span> {alert.value}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
-          {/* Recommendation */}
           <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
-            <h4 className='font-semibold text-green-900 mb-2'>Recomendación</h4>
-            <p className='text-sm text-green-800'>
-              El cliente tiene un buen perfil de riesgo. Es apto para continuar con el proceso de crédito.
-            </p>
+            <h4 className='font-semibold text-green-900 mb-2'>Recomendacion</h4>
+            <p className='text-sm text-green-800'>El cliente mantiene un perfil saludable y su estado es viable para continuar con el proceso de credito. No se evidencian alertas que bloqueen la desembolsacion.</p>
           </div>
         </>
       ) : (
         <div className='bg-red-50 border border-red-200 rounded-lg p-6'>
-          <h4 className='font-semibold text-red-900 mb-2'>Cliente No Apto</h4>
-          <p className='text-sm text-red-800'>
-            El cliente no cumple con los requisitos de riesgo. Por favor verifica los datos.
-          </p>
+          <h4 className='font-semibold text-red-900 mb-2'>Cliente No Viable</h4>
+          <p className='text-sm text-red-800'>El cliente no cumple con los requisitos de riesgo. Por favor verifica los datos.</p>
         </div>
       )}
 
-      {/* Info Box */}
       <div className='bg-blue-50 border border-blue-200 rounded-lg p-4'>
-        <h4 className='font-semibold text-blue-900 mb-2'>Información de Consulta</h4>
+        <h4 className='font-semibold text-blue-900 mb-2'>Informacion de consulta</h4>
         <ul className='text-sm text-blue-800 space-y-1'>
-          <li>✓ Última consulta: {riskData?.lastCheck}</li>
-          <li>✓ Deudas activas: {riskData?.activeDebts}</li>
-          <li>✓ Deuda total: ${riskData?.totalDebt.toLocaleString('es-CO')} COP</li>
-          <li>✓ Datos obtenidos de DataCrédito y centrales de riesgo</li>
+          <li>Ultima consulta: {riskData?.lastCheck || 'En proceso'}</li>
+          <li>Fuentes: {riskData?.consultedEntities?.join(', ') || 'No disponible'}</li>
+          <li>Deudas activas: {riskData?.activeDebts ?? '-'}</li>
+          <li>Deuda total: {riskData ? formatCurrency(riskData.totalDebt) : '$0'}</li>
         </ul>
       </div>
 
-      {/* Action Buttons */}
       <div className='flex gap-4 pt-4'>
         <button
           onClick={handleContinue}
